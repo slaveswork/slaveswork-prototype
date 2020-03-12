@@ -13,6 +13,9 @@ func main() {
 	logger := setLogger()
 	app := createAstilectronAPP(logger)
 
+	// Handle signals
+	//a.HandleSignals()
+
 	err := app.Start()
 	errorChecker(err, logger, "main: starting astilectron failed: %w")
 	defer app.Close()
