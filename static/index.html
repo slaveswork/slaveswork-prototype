@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="script/event.js"></script>
+</head>
+<body>
+    <h1>Slave's Work</h1>
+
+    <div>
+        <button>Host</button>
+    </div>
+    <div>
+        <button onclick="ClientButtonEvent()">Client</button>
+    </div>
+</body>
+<script>
+    document.addEventListener('astilectron-ready', function() {
+        // This will listen to messages sent by GO
+        astilectron.onMessage(function(message) {
+            // Process message
+            if (message === "hello") {
+                return "world";
+            }
+        });
+    })
+</script>
+</html>
