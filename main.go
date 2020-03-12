@@ -27,7 +27,7 @@ func main() {
 	err = window.Create()
 	errorChecker(err, logger, "main: creating window failed: %w")
 
-	newMenu(app, window)
+	addMenu(app, window)
 
 	// Blocking pattern
 	app.Wait()
@@ -49,14 +49,14 @@ func createAstilectronAPP(logger *log.Logger) *astilectron.Astilectron {
 }
 
 // Error Checker
-func errorChecker(err error, logger *log.Logger, message string){
+func errorChecker(err error, logger *log.Logger, message string) {
 	if err != nil {
 		logger.Fatal(fmt.Errorf(message, err))
 	}
 }
 
 // NewMenu
-func newMenu(a *astilectron.Astilectron, w *astilectron.Window) {
+func addMenu(a *astilectron.Astilectron, w *astilectron.Window) {
 	menu := a.NewMenu([]*astilectron.MenuItemOptions{
 		{
 			Label: astikit.StrPtr("Separator"),
