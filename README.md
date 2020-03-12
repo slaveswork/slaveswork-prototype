@@ -1,3 +1,6 @@
+# develop 실행
+터미널에서 `go run main.go` 명령어 이용. 
+
 # build 방법
 
 bunbler.json 에 다음을 추가한다.
