@@ -31,6 +31,7 @@ func main() {
 	errorChecker(err, logger, "main: creating window failed: %w")
 
 	addMenu(app, window)
+	OnMessage(window)
 
 	// Blocking pattern
 	app.Wait()
@@ -64,21 +65,6 @@ func addMenu(a *astilectron.Astilectron, w *astilectron.Window) {
 		{
 			Label: astikit.StrPtr("Separator"),
 			SubMenu: []*astilectron.MenuItemOptions{
-				{Label: astikit.StrPtr("Normal 1")},
-				{Label: astikit.StrPtr("Normal 2"),
-					OnClick: func(e astilectron.Event) (deleteListener bool) {
-						w.SendMessage("hello", func(m *astilectron.EventMessage) {
-							// Unmarshal
-							var s string
-							m.Unmarshal(&s)
-
-							// Process message
-							log.Printf("received %s\n", s)
-						})
-						return
-					},
-				},
-				{Type: astilectron.MenuItemTypeSeparator},
 				{Label: astikit.StrPtr("dev tool"), OnClick: func(e astilectron.Event) (deleteListener bool) {
 					w.OpenDevTools()
 					return
@@ -86,23 +72,14 @@ func addMenu(a *astilectron.Astilectron, w *astilectron.Window) {
 			},
 		},
 		{
-			Label: astikit.StrPtr("Checkbox"),
+			Label: astikit.StrPtr("Window"),
 			SubMenu: []*astilectron.MenuItemOptions{
-				{Checked: astikit.BoolPtr(true), Label: astikit.StrPtr("Checkbox 1"), Type: astilectron.MenuItemTypeCheckbox},
-				{Label: astikit.StrPtr("Checkbox 2"), Type: astilectron.MenuItemTypeCheckbox},
-				{Label: astikit.StrPtr("Checkbox 3"), Type: astilectron.MenuItemTypeCheckbox},
+				{Label: astikit.StrPtr("Minimize"), Role: astilectron.MenuItemRoleMinimize},
+				{Label: astikit.StrPtr("Close"), Role: astilectron.MenuItemRoleClose},
 			},
 		},
 		{
-			Label: astikit.StrPtr("Radio"),
-			SubMenu: []*astilectron.MenuItemOptions{
-				{Checked: astikit.BoolPtr(true), Label: astikit.StrPtr("Radio 1"), Type: astilectron.MenuItemTypeRadio},
-				{Label: astikit.StrPtr("Radio 2"), Type: astilectron.MenuItemTypeRadio},
-				{Label: astikit.StrPtr("Radio 3"), Type: astilectron.MenuItemTypeRadio},
-			},
-		},
-		{
-			Label: astikit.StrPtr("Roles"),
+			Label: astikit.StrPtr("Help"),
 			SubMenu: []*astilectron.MenuItemOptions{
 				{Label: astikit.StrPtr("Minimize"), Role: astilectron.MenuItemRoleMinimize},
 				{Label: astikit.StrPtr("Close"), Role: astilectron.MenuItemRoleClose},
@@ -114,4 +91,20 @@ func addMenu(a *astilectron.Astilectron, w *astilectron.Window) {
 	if err != nil {
 		fmt.Println("Menu Error!")
 	}
+}
+
+// OnMessage
+func OnMessage(w *astilectron.Window) {
+	w.OnMessage(func(m *astilectron.EventMessage) interface{} {
+		// Unmarshal
+		var s string
+		m.Unmarshal(&s)
+		log.Println(s)
+		// Process message
+		if s == "start" {
+			log.Println("server start")
+			return "server start!!"
+		}
+		return nil
+	})
 }

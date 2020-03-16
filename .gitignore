@@ -2,3 +2,6 @@
 /output
 /.idea
 .idea
+
+bind_linux_amd64.go
+bind_wndows_amd64.go
