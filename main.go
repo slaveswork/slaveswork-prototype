@@ -6,6 +6,7 @@ import (
 
 	"github.com/asticode/go-astikit"
 	"github.com/asticode/go-astilectron"
+	"github.com/slaveswork/slaveswork-prototype/server"
 )
 
 const StaticPath string = "static"
@@ -90,15 +91,20 @@ func addMenu(a *astilectron.Astilectron, w *astilectron.Window) {
 // select run type
 func selectRunType(w *astilectron.Window) {
 	w.OnMessage(func(m *astilectron.EventMessage) interface{} {
+		c := make(chan string)
+
 		// Unmarshal
 		var s string
 		m.Unmarshal(&s)
-		log.Println(s)
+
 		// Process message
-		if s == "start" {
-			log.Println("server start")
-			return "server start!!"
+		if s == "host" {
+			go server.LaunchServer(c)
+			s = <-c
+		} else {
+
 		}
+
 		return nil
 	})
 }
