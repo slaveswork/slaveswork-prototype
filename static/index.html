@@ -87,9 +87,10 @@
             await sleep(100);
             var start = document.getElementById("electron_start");
             var deviceListElement = document.getElementById("device_list");
-            var deviceList = Map()
+            var deviceList = new Map()
 
             start.addEventListener('click', function () {
+                console.log("starting host")
                 astilectron.sendMessage("host", function (message) {
                     var token = document.getElementById("token");
                     token.innerText = message;
@@ -129,9 +130,8 @@
             var submit = document.getElementById("client_submit");
 
             submit.addEventListener('click', function () {
-                console.log("submit");
                 var token = document.getElementsByClassName("client_token").item(0);
-                astilectron.sendMessage(token.innerText, function (message) {
+                astilectron.sendMessage(token.value, function (message) {
                     console.log(message);
                 });
             });
@@ -168,5 +168,4 @@
 </script>
 </script>
 
-<
-/html>
+</html>
