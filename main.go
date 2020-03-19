@@ -2,11 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/asticode/go-astikit"
 	"github.com/asticode/go-astilectron"
-	"log"
+	"github.com/slaveswork/slaveswork-prototype/client"
+	"github.com/slaveswork/slaveswork-prototype/server"
 )
 
+// StaticPath for NewWindow path
 const StaticPath string = "static"
 
 func main() {
@@ -31,7 +35,7 @@ func main() {
 	errorChecker(err, logger, "main: creating window failed: %w")
 
 	addMenu(app, window)
-	OnMessage(window)
+	selectRunType(window)
 
 	// Blocking pattern
 	app.Wait()
@@ -78,13 +82,6 @@ func addMenu(a *astilectron.Astilectron, w *astilectron.Window) {
 				{Label: astikit.StrPtr("Close"), Role: astilectron.MenuItemRoleClose},
 			},
 		},
-		{
-			Label: astikit.StrPtr("Help"),
-			SubMenu: []*astilectron.MenuItemOptions{
-				{Label: astikit.StrPtr("Minimize"), Role: astilectron.MenuItemRoleMinimize},
-				{Label: astikit.StrPtr("Close"), Role: astilectron.MenuItemRoleClose},
-			},
-		},
 	})
 
 	err := menu.Create()
@@ -93,18 +90,22 @@ func addMenu(a *astilectron.Astilectron, w *astilectron.Window) {
 	}
 }
 
-// OnMessage
-func OnMessage(w *astilectron.Window) {
+// select run type
+func selectRunType(w *astilectron.Window) {
 	w.OnMessage(func(m *astilectron.EventMessage) interface{} {
+		c := make(chan string)
+
 		// Unmarshal
 		var s string
 		m.Unmarshal(&s)
-		log.Println(s)
+
 		// Process message
-		if s == "start" {
-			log.Println("server start")
-			return "server start!!"
+		if s == "host" {
+			go server.LaunchServer(w, c)
+			return <-c
 		}
-		return nil
+
+		go client.LaunchClient(c, s)
+		return <-c
 	})
 }
