@@ -4,18 +4,29 @@ import (
 	"bufio"
 	"context"
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 
+	"github.com/asticode/go-astilectron"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/multiformats/go-multiaddr"
 )
 
+// ClientInfo is JSON format for client cpu usage.
+type clientInfo struct {
+	Name  string    `json:"name"`
+	Usage []float64 `json:"usage"`
+}
+
+var window *astilectron.Window
+
 // LaunchServer run host application
-func LaunchServer(c chan string) {
+func LaunchServer(w *astilectron.Window, c chan string) {
+	window = w
 	sourcePort := 4444
 
 	var r io.Reader = rand.Reader
@@ -91,7 +102,17 @@ func readCPU(rw *bufio.ReadWriter) {
 		}
 
 		if str != "\n" {
+			res := clientInfo{}
+			json.Unmarshal([]byte(str), &res)
 			// Send message to electron application
+			window.SendMessage(str, func(m *astilectron.EventMessage) {
+				// Unmarshal
+				var s string
+				m.Unmarshal(&s)
+
+				// Process message
+				fmt.Println(fmt.Sprintf("Host Application Updates %s for %s", s, res.Name))
+			})
 		}
 	}
 }

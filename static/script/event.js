@@ -7,12 +7,3 @@ window.onload = function(){
         }))
     }))
 };
-
-document.getElementById("host").addEventListener("click", function() {
-    // Send host 'start' message to GO
-    astilectron.sendMessage("host", function(message) {
-        // Token element have only class name. So I used that.
-        var tokenElement = document.getElementsByClassName('token'); 
-        tokenElement.item(0).innerText(message);
-    });
-});

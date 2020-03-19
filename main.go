@@ -6,9 +6,11 @@ import (
 
 	"github.com/asticode/go-astikit"
 	"github.com/asticode/go-astilectron"
+	"github.com/slaveswork/slaveswork-prototype/client"
 	"github.com/slaveswork/slaveswork-prototype/server"
 )
 
+// StaticPath for NewWindow path
 const StaticPath string = "static"
 
 func main() {
@@ -99,12 +101,11 @@ func selectRunType(w *astilectron.Window) {
 
 		// Process message
 		if s == "host" {
-			go server.LaunchServer(c)
-			s = <-c
-		} else {
-
+			go server.LaunchServer(w, c)
+			return <-c
 		}
 
-		return nil
+		go client.LaunchClient(c, s)
+		return <-c
 	})
 }
