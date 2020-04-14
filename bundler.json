@@ -1,9 +1,0 @@
-{
-  "app_name": "Slave's Work",
-
-  "environments": [
-    {"arch": "amd64", "os": "darwin"},
-    {"arch": "amd64", "os": "linux"},
-    {"arch": "amd64", "os": "windows"}
-  ]
-}

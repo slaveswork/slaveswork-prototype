@@ -1,111 +1,43 @@
 package main
 
 import (
-	"fmt"
-	"log"
-
-	"github.com/asticode/go-astikit"
-	"github.com/asticode/go-astilectron"
-	"github.com/slaveswork/slaveswork-prototype/client"
-	"github.com/slaveswork/slaveswork-prototype/server"
+	"github.com/Equanox/gotron"
 )
 
-// StaticPath for NewWindow path
-const StaticPath string = "static"
-
 func main() {
-	logger := setLogger()
-	app := createAstilectronAPP(logger)
+	// Create a new browser window instance
+	window := app()
 
-	// Handle signals
-	//a.HandleSignals()
-
-	err := app.Start()
-	errorChecker(err, logger, "main: starting astilectron failed: %w")
-	defer app.Close()
-
-	window, err := app.NewWindow(StaticPath+"/index.html", &astilectron.WindowOptions{
-		Center: astikit.BoolPtr(true),
-		Height: astikit.IntPtr(700),
-		Width:  astikit.IntPtr(700),
-	})
-	errorChecker(err, logger, "main: new window failed: %w")
-
-	err = window.Create()
-	errorChecker(err, logger, "main: creating window failed: %w")
-
-	addMenu(app, window)
-	selectRunType(window)
-
-	// Blocking pattern
-	app.Wait()
-}
-
-// Set logger
-func setLogger() *log.Logger {
-	return log.New(log.Writer(), log.Prefix(), log.Flags())
-}
-
-// Create astilectron
-func createAstilectronAPP(logger *log.Logger) *astilectron.Astilectron {
-	a, err := astilectron.New(logger, astilectron.Options{
-		AppName:           "Test",
-		BaseDirectoryPath: "",
-	})
-	errorChecker(err, logger, "main: creating astilectron failed: %w")
-	return a
-}
-
-// Error Checker
-func errorChecker(err error, logger *log.Logger, message string) {
+	// Start the browser window.
+	// This will establish a golang <=> nodejs bridge using websockets,
+	// to control ElectronBrowserWindow with our window object.
+	done, err := window.Start()
 	if err != nil {
-		logger.Fatal(fmt.Errorf(message, err))
+		panic(err)
 	}
-}
 
-// NewMenu
-func addMenu(a *astilectron.Astilectron, w *astilectron.Window) {
-	menu := a.NewMenu([]*astilectron.MenuItemOptions{
-		{
-			Label: astikit.StrPtr("Separator"),
-			SubMenu: []*astilectron.MenuItemOptions{
-				{Label: astikit.StrPtr("dev tool"), OnClick: func(e astilectron.Event) (deleteListener bool) {
-					w.OpenDevTools()
-					return
-				}},
-			},
-		},
-		{
-			Label: astikit.StrPtr("Window"),
-			SubMenu: []*astilectron.MenuItemOptions{
-				{Label: astikit.StrPtr("Minimize"), Role: astilectron.MenuItemRoleMinimize},
-				{Label: astikit.StrPtr("Close"), Role: astilectron.MenuItemRoleClose},
-			},
-		},
+	// Open dev tools must be used after window.Start
+	window.OpenDevTools()
+
+	ReceiveMessage(window, EventHost, func(bin []byte) {
+		//Event Handler
 	})
 
-	err := menu.Create()
+	SendMessage(window, EventHost, "hello world")
+	// Wait for the application to close
+	<- done
+}
+
+func app() *gotron.BrowserWindow {
+	window, err := gotron.New("ui/dist")
 	if err != nil {
-		fmt.Println("Menu Error!")
+		panic(err)
 	}
-}
 
-// select run type
-func selectRunType(w *astilectron.Window) {
-	w.OnMessage(func(m *astilectron.EventMessage) interface{} {
-		c := make(chan string)
+	// Alter default window size and window title.
+	window.WindowOptions.Width = 1432
+	window.WindowOptions.Height = 700
+	window.WindowOptions.Title = "Slave's work"
 
-		// Unmarshal
-		var s string
-		m.Unmarshal(&s)
-
-		// Process message
-		if s == "host" {
-			go server.LaunchServer(w, c)
-			return <-c
-		}
-
-		go client.LaunchClient(c, s)
-		return <-c
-	})
+	return window
 }
