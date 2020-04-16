@@ -2,16 +2,21 @@
     color: #AFABAB;
 }
 
+.fa-home{
+    transform: scale(1.1);
+}
+
 .fa-desktop{
-    font-size: 20px ;
     position: relative;
     top: 3px;
+    transform: scaleX(0.9);
 }
 
 .fa-list-alt{
     font-size: 23px;
     position: relative;
     top: 1px;
+    transform: scaleX(0.9);
 }
 
 #tab_menu{
