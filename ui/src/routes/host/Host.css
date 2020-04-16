@@ -1,0 +1,11 @@
+#host_wrapper_top{
+    background: #2F3241;
+    color: #fff;
+}
+
+#host_wrapper_top div h3{
+    font-size: 44px;
+    margin-left: 22px;
+    font-family: "noto sans KR thin";
+    font-weight: 100;
+}
