@@ -87,3 +87,7 @@
     height: calc(100% - 46px);
     background-color: #EEF1F6;
 }
+
+.tab_center{
+    text-align: center;
+}
