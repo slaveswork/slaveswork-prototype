@@ -3,7 +3,9 @@
 }
 
 .fa-home{
-    transform: scale(1.1);
+    position: relative;
+    transform: scaleX(0.9) scaleY(1.1);
+    top: 2px;
 }
 
 .fa-desktop{
@@ -72,7 +74,6 @@
 
 #tab_menu_bar ul .unfocus:hover .gray{
     color: #FF008C;
-    opacity: 0.7;
 }
 
 #tab_menu_bar ul li i{
