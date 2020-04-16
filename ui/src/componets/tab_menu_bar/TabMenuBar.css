@@ -9,14 +9,14 @@
 .fa-desktop{
     position: relative;
     top: 3px;
-    transform: scaleX(0.9);
+    transform: scaleX(0.9) scale(0.9);
 }
 
 .fa-list-alt{
     font-size: 23px;
     position: relative;
-    top: 1px;
-    transform: scaleX(0.9);
+    top: 2px;
+    transform: scaleX(0.8);
 }
 
 #tab_menu{
@@ -82,9 +82,9 @@
 
 #tab_menu_bar ul li p{
     font-family: 'Quicksand', sans-serif;
-    line-height: 33px;
+    line-height: 36px;
     height: 38px;
-    margin-left: 3px;
+    font-size: 13px;
 }
 
 .tab{
