@@ -4,7 +4,7 @@ import './Home.css';
 const Home = () => {
     return (
         <div className="tab">
-            <h4 className="tab_sub_title">My info</h4>
+            <h4 className="tab_home_title">My info</h4>
             <ul id="com_info">
                 <li>
                     <label>IP</label>

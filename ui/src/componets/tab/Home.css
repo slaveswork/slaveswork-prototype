@@ -1,4 +1,4 @@
-.tab_sub_title{
+.tab_home_title{
     padding-top: 40px;
     margin-left: 40px;
     font-family: 'quicksand';
@@ -49,5 +49,5 @@
 #home_gen_btn:hover{
     cursor: pointer;
     box-shadow: 0 7px 9px 0 rgba(0,0,0,0.2);
-    transform: translateY(-4px);
+    transform: translateY(-3px);
 }
