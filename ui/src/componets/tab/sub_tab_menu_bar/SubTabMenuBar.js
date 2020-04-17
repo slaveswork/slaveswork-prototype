@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import './TabMenuBar.css'
+import './SubTabMenuBar.css';
 
-const TabMenuBar = (props) => {
-    const [menuArray, setMenuArray] = useState(props.menu);
+const SubTabMenuBar = (props) =>{
+    const [menuArray, setMenuArray] = useState(props.subMenu);
     const [selected, setSelected] = useState(0);
 
-    return (
-        <div id="tab_menu">
-            <div id="tab_menu_bar">
+    return (    
+        <div id="sub_tab_menu">
+            <div id="sub_tab_menu_bar">
                 <ul>
                     {menuArray.map((menu, index) => {
                         return (
@@ -16,11 +16,8 @@ const TabMenuBar = (props) => {
                                 key={menu.title}
                                 onClick={() => setSelected(index)}>
                                 {index == selected ?
-                                    <i className={menu.url} aria-hidden="true" /> :
-                                    <i className={menu.url + " gray"} aria-hidden="true" />}
-                                {index == selected ?
-                                    <p>{menu.title}</p> :
-                                    <p className="gray">{menu.title}</p>}
+                                    <p className="white">{menu.title}</p> :
+                                    <p >{menu.title}</p>}
                             </li>
 
                         );
@@ -30,6 +27,5 @@ const TabMenuBar = (props) => {
             {props.children[selected]}
         </div>
     );
-};
-
-export default TabMenuBar;
+}
+export default SubTabMenuBar;

@@ -46,6 +46,10 @@
     position: relative;
 }
 
+#tab_menu_bar ul li:hover{
+    cursor: pointer;
+}
+
 #tab_menu_bar ul .focus::before{
     content: "";
     width: 100%;
