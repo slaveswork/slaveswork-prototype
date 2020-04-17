@@ -26,9 +26,9 @@ const Main = () => {
                         Host
                     </Link>
                 </Fade>
-                <Fade key="main-bottom-client-btn" bottom>
-                    <Link to={{ pathname: "/client" }} id="client_btn">
-                        Client
+                <Fade key="main-bottom-worker-btn" bottom>
+                    <Link to={{ pathname: "/worker" }} id="worker_btn">
+                        Worker
                     </Link>
                 </Fade>
             </div>
