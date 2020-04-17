@@ -2,6 +2,7 @@
     width: 100%;
     height: 100%;
 }
+
 #sub_tab_menu_bar{
     font-size: 24px;
     font-family: 'Gothic A1', sans-serif;
@@ -20,6 +21,7 @@
 #sub_tab_menu_bar ul .focus{
     background-color: #fff;
 }
+
 #sub_tab_menu_bar ul .unfocus{
     color: #203864;
 }
@@ -27,7 +29,6 @@
 #sub_tab_menu_bar ul li p{
     display: inline-block;
 }
-
 
 .sub_tab{
     width: 100%;

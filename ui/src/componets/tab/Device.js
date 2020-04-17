@@ -20,7 +20,6 @@ const Device = () => {
                         </tbody>
                         :
                         ""
-
                     }
                 </table>
             </div>
