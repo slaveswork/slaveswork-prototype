@@ -2,10 +2,10 @@
     color: #AFABAB;
 }
 
-.fa-home{
+.fa-house-user{
     position: relative;
-    transform: scaleX(0.9) scaleY(1.1);
-    top: 2px;
+    transform: scaleX(0.9);
+    top: 3px;
 }
 
 .fa-desktop{
@@ -14,11 +14,16 @@
     transform: scaleX(0.9) scale(0.9);
 }
 
-.fa-list-alt{
-    font-size: 23px;
+.fa-clipboard-list{
     position: relative;
     top: 2px;
-    transform: scaleX(0.8);
+    transform: scaleX(1.05);
+    padding-right: 2px;
+}
+
+.fa-cog{
+    position: relative;
+    top: 2px;
 }
 
 #tab_menu{
@@ -42,7 +47,7 @@
 }
 
 #tab_menu_bar ul li{
-    margin-right: 24px;
+    margin-right: 25px;
     position: relative;
 }
 
@@ -81,7 +86,7 @@
 }
 
 #tab_menu_bar ul li i{
-    font-size: 25px;
+    font-size: 22px;
     margin: 4px;
 }
 

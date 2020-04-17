@@ -5,11 +5,10 @@ import Device from '../../componets/tab/Device';
 import Task from '../../componets/tab/Task';
 import './Host.css'
 
-
 const menuArray = [
     {
         title: 'Home',
-        url: 'fa fa-home'
+        url: 'fas fa-house-user'
     },
     {
         title: 'Device',
@@ -17,7 +16,7 @@ const menuArray = [
     },
     {
         title: 'Task',
-        url: 'fa fa-list-alt'
+        url: 'fas fa-clipboard-list'
     }
 ];
 
