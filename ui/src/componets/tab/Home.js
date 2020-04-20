@@ -12,11 +12,11 @@ const Home = () => {
                 </li>
                 <li>
                     <label>Port</label>
-                    <p>: 34001</p>
+                    <p>: {global.backendPort}</p>
                 </li>
                 <li>
                     <label>Token</label>
-                    <p>: </p>
+                    <p>: {}</p>
                 </li>
             </ul>
             <div className="tab_center">
