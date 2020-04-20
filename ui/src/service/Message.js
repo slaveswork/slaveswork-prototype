@@ -16,7 +16,7 @@ const connect = () => {
         websocket = new WebSocket("ws://localhost:" + global.backendPort + "/web/app/events");
 }
 
-const sendMessage = (event, message) => {
+const sendMessage = (event, message = {}) => {
     if (websocket === undefined) {
         console.log("Error Send Message not connected app");
         return;

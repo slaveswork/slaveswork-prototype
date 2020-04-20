@@ -2,6 +2,7 @@ import React from 'react';
 import TabMenuBar from '../../componets/tab_menu_bar/TabMenuBar';
 import WorkerHome from '../../componets/tab/WorkerHome';
 import Status from '../../componets/tab/Status';
+import { Events, sendMessage } from '../../service/Message';
 import './Worker.css'
 
 const menuArray = [
@@ -16,6 +17,8 @@ const menuArray = [
 ];
 
 const Worker = () => {
+    sendMessage(Events.appWorkerStart);
+
     return (
         <div id="wrapper">
             <div id="host_wrapper_top">

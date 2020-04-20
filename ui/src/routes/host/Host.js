@@ -22,7 +22,7 @@ const menuArray = [
 ];
 
 const Host = () => {
-    sendMessage(Events.appHostStart, {});
+    sendMessage(Events.appHostStart);
 
     return (
         <div id="wrapper">
