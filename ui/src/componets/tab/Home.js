@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Events, sendMessage, receiveMessage} from '../../service/Message';
+import { Events, sendMessage, receiveMessage } from '../../service/Message';
 import './Home.css';
 
 const genToken = () => {
@@ -9,7 +9,7 @@ const genToken = () => {
 const useToken = () => {
     const [token, setToken] = useState("");
     useEffect(() => {
-        receiveMessage(Events.windowSendToken, (data)=>{
+        receiveMessage(Events.windowSendToken, (data) => {
             const message = JSON.parse(data)
             setToken(message.token)
         })
@@ -20,7 +20,7 @@ const useToken = () => {
 const useIp = () => {
     const [ip, setIp] = useState("127.0.0.1");
     useEffect(() => {
-        receiveMessage(Events.windowNetworkStatus, (data)=>{
+        receiveMessage(Events.windowNetworkStatus, (data) => {
             const message = JSON.parse(data)
             setIp(message.ip)
         })

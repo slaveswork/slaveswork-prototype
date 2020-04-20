@@ -31,12 +31,11 @@ const receiveMessage = (event, callback) => {
         console.log("Error Send Message not connected app");
         return;
     };
-    
+
     websocket.addEventListener('message', function (message) {
         const json = JSON.parse(message.data);
-
-        if(json.event.event === event){
-            callback(json.message);
+        if (json.event.e === event) {
+            callback(obj.message);
         }
     });
 }
