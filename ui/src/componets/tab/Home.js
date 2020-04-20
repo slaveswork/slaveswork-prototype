@@ -27,6 +27,7 @@ const useIp = () => {
     }, [ip]);
     return ip;
 }
+
 const Home = () => {
     const token = useToken();
     const ip = useIp();
