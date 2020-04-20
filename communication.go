@@ -6,8 +6,8 @@ import (
 )
 
 type CustomEvent struct {
-	Event           *gotron.Event
-	Message string	`json:"Message"`
+	Event   *gotron.Event `json:"event"`
+	Message string        `json:"message"`
 }
 
 func (c CustomEvent) EventString() string {
@@ -18,7 +18,7 @@ func ReceiveMessage(window *gotron.BrowserWindow, channel string, callback func(
 	window.On(&gotron.Event{Event: channel}, callback)
 }
 
-func SendMessage(window *gotron.BrowserWindow, channel string, msg string){
+func SendMessage(window *gotron.BrowserWindow, channel string, msg string) {
 	event := CustomEvent{
 		Event:   &gotron.Event{Event: channel},
 		Message: msg,
