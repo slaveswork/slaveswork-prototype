@@ -3,6 +3,7 @@ import { Events, sendMessage } from '../../service/Message';
 import './WorkerHome.css';
 
 const connect = (tokenText) => {
+    // todo : token vaildation
     sendMessage(Events.appConnectDevice, { token: tokenText.current.value });
 }
 
