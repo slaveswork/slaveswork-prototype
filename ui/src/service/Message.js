@@ -1,3 +1,13 @@
+const Events = {
+    appHostStart            : "app.event.host",
+    appWorkerStart          : "app.worker.start",
+    appGenerateToken        : "app.generate.token",
+    windowDeviceStatus      : "window.device.status",
+    windowNetworkStatus     : "window.network.status",
+    windowTaskProgress      : "window.task.progress",
+    windowSendToken         : "window.send.token"
+};
+
 let websocket = undefined;
 
 const connect = () => {
@@ -6,7 +16,6 @@ const connect = () => {
 }
 
 const sendMessage = (event, message) => {
-    console.log(websocket);
     if (websocket === undefined) {
         console.log("Error Send Message not connected app");
         return;
@@ -17,20 +26,24 @@ const sendMessage = (event, message) => {
     }));
 }
 
-const onMessage = () => {
-    socket.addEventListener('message', function (event) {
-        let obj = JSON.parse(message.data);
+const receiveMessage = (event, callback) => {
+    if (websocket === undefined) {
+        console.log("Error Send Message not connected app");
+        return;
+    };
+    
+    websocket.addEventListener('message', function (message) {
+        const json = JSON.parse(message.data);
 
-        // event name
-        console.log(obj.event);
-
-        // event data
-        console.log(obj.AtrNameInFrontend);
+        if(json.event.event === event){
+            callback(json.message);
+        }
     });
 }
 
 export {
+    Events,
     connect,
     sendMessage,
-    onMessage
+    receiveMessage
 };

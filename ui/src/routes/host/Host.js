@@ -3,8 +3,7 @@ import TabMenuBar from '../../componets/tab_menu_bar/TabMenuBar';
 import Home from '../../componets/tab/Home';
 import Device from '../../componets/tab/Device';
 import Task from '../../componets/tab/Task';
-import { sendMessage } from '../../service/Message';
-import Events from '../../service/Events';
+import { Events, sendMessage } from '../../service/Message';
 import './Host.css'
 
 const menuArray = [
