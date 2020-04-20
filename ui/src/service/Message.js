@@ -2,6 +2,7 @@ const Events = {
     appHostStart            : "app.event.host",
     appWorkerStart          : "app.worker.start",
     appGenerateToken        : "app.generate.token",
+    appConnectDevice        : "app.connect.device",
     windowDeviceStatus      : "window.device.status",
     windowNetworkStatus     : "window.network.status",
     windowTaskProgress      : "window.task.progress",
@@ -20,10 +21,12 @@ const sendMessage = (event, message) => {
         console.log("Error Send Message not connected app");
         return;
     };
-    websocket.send(JSON.stringify({
+    const sendData = JSON.stringify({
         "event": event,
         "message": message,
-    }));
+    });
+    console.log(sendData);
+    websocket.send(sendData);
 }
 
 const receiveMessage = (event, callback) => {
