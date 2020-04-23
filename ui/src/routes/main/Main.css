@@ -37,14 +37,14 @@
 }
 
 #main_wrapper_bottom div #host_btn:hover,
-#main_wrapper_bottom div #client_btn:hover{
+#main_wrapper_bottom div #worker_btn:hover{
     background-color: #fff;
     color: #000;
     transform: translateY(-3px);
     box-shadow: 0 8px 8px 0 rgba(0,0,0,0.6);
 }
 
-#main_wrapper_bottom div #client_btn{
+#main_wrapper_bottom div #worker_btn{
     margin-left: 60px;
 }
 

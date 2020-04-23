@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Fade from 'react-reveal/Fade';
-import './Home.css'
+import './Main.css'
 
-const Home = () => {
+const Main = () => {
     return (
         <div id="wrapper">
             <div id="main_wrapper_top">
@@ -26,9 +26,9 @@ const Home = () => {
                         Host
                     </Link>
                 </Fade>
-                <Fade key="main-bottom-client-btn" bottom>
-                    <Link to={{ pathname: "/client" }} id="client_btn">
-                        Client
+                <Fade key="main-bottom-worker-btn" bottom>
+                    <Link to={{ pathname: "/worker" }} id="worker_btn">
+                        Worker
                     </Link>
                 </Fade>
             </div>
@@ -36,4 +36,4 @@ const Home = () => {
     )
 }
 
-export default Home;
+export default Main;

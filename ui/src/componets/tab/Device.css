@@ -1,0 +1,44 @@
+.tab_title_wrapper{
+    padding: 15px 18px;
+    position: relative;
+
+}
+
+#tab_device_title{
+    padding: 10px 20px;
+    background-color: #fff;
+    border: 1px solid #D9D9D9;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 23px;
+    letter-spacing: 0.5px;
+    color: #203864;
+}
+
+#device_delete_btn{
+    position: absolute;
+    background: none;
+    right: 28px;
+    top: 44px;
+    border: none;
+    color: #4472C4;
+}
+
+#tab_device_list{
+    position: relative;
+    padding: 0 18px;
+    height: calc( 100% - 81px );
+}
+
+#tab_device_list table{
+    background-color: #fff;
+    border: 1px solid #D9D9D9;
+    width: 100%;
+    height: calc( 100% - 18px );
+}
+
+#tab_device_list table tbody tr #empty{
+    text-align: center;
+    height: 100%;
+    font-family: 'open sans', sans-serif;
+    font-size: 20px;
+}
