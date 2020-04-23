@@ -1,5 +1,5 @@
 .tab_title_wrapper{
-    padding: 15px 18px;
+    padding: 13px 18px;
     position: relative;
 
 }
@@ -23,17 +23,32 @@
     color: #4472C4;
 }
 
+/* debug */
+#device_add_btn{
+    position: absolute;
+    background: none;
+    right: 88px;
+    top: 44px;
+    border: none;
+    color: #4472C4;
+}
+
 #tab_device_list{
     position: relative;
-    padding: 0 18px;
-    height: calc( 100% - 81px );
+    margin: 0 18px 18px;
+    height: calc( 100% - 100px );
+    background: #FFF;
+    border: 1px solid #d9d9d9;
 }
 
 #tab_device_list table{
-    background-color: #fff;
-    border: 1px solid #D9D9D9;
     width: 100%;
-    height: calc( 100% - 18px );
+    height: 100%;
+    border-collapse: collapse;
+}
+
+#tab_device_list .full{
+    height: 100%;
 }
 
 #tab_device_list table tbody tr #empty{
@@ -41,4 +56,92 @@
     height: 100%;
     font-family: 'open sans', sans-serif;
     font-size: 20px;
+}
+
+#tab_device_list table .block{
+    display: block;
+}
+
+#tab_device_list table thead tr{
+    border-bottom: 1px solid #D9D9D9;
+}
+
+#tab_device_list table thead tr th{
+    height: 41px;
+    font-size: 16px;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: bold;
+}
+
+#tab_device_list table thead tr .memory{
+    padding-right: 14px;
+}
+
+#tab_device_list table thead tr .checkbox input{
+    width: 15px;
+    height: 21px;
+    vertical-align: middle;
+}
+
+#tab_device_list table tbody{
+    text-align: center;
+    overflow: auto;
+    height: calc(100% - 42px);
+    font-size: 24px;
+    font-family: 'Noto Sans KR thin', sans-serif;
+}
+
+#tab_device_list table tbody::-webkit-scrollbar
+{
+    width: 4px;
+    background-color: #fff;
+}
+
+#tab_device_list table tbody::-webkit-scrollbar-thumb
+{
+    border-radius: 2px;
+    -webkit-box-shadow: inset 0 0 1px rgba(0,0,0,.4);
+    background-color: #D9D9D9;
+}
+
+#tab_device_list table tbody::-webkit-scrollbar-track
+{
+    -webkit-box-shadow: inset 0 0 2px rgba(0,0,0,0.1);
+    border-radius: 2px;
+    background-color: #Fff;
+    border: 0.5px solid #eee;
+}
+
+#tab_device_list table tbody tr{
+    border-bottom: 1px solid #d9d9d9;
+    height: 52px;
+}
+
+#tab_device_list table tbody tr td{
+    height: 52px;
+
+}
+
+#tab_device_list table tbody tr .checkbox input{
+    width: 15px;
+    height: 36px;
+    vertical-align: middle;
+}
+
+#tab_device_list table .checkbox{
+    width: 50px;
+}
+
+#tab_device_list table .name{
+    width: 320px;
+    padding-right: 100px;
+}
+
+#tab_device_list table .cpu{
+    width: 150px;
+}
+
+#tab_device_list table .memory{
+    width: 150px;
+    padding-right: 10px;
 }
