@@ -1,12 +1,12 @@
 const Events = {
-    appHostStart: "app.host.start",
-    appWorkerStart: "app.worker.start",
-    appGenerateToken: "app.generate.token",
-    appConnectDevice: "app.connect.device",
-    windowDeviceStatus: "window.device.status",
-    windowNetworkStatus: "window.network.status",
-    windowTaskProgress: "window.task.progress",
-    windowSendToken: "window.send.token"
+    appHostStart        : "app.host.start",
+    appWorkerStart      : "app.worker.start",
+    appGenerateToken    : "app.generate.token",
+    appConnectDevice    : "app.connect.device",
+    windowDeviceStatus  : "window.device.status",
+    windowNetworkStatus : "window.network.status",
+    windowTaskProgress  : "window.task.progress",
+    windowSendToken     : "window.send.token"
 };
 
 let websocket = undefined;
