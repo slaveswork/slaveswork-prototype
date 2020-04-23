@@ -25,6 +25,7 @@ const sendMessage = (event, message = {}) => {
         "event": event,
         "message": message,
     });
+    console.log("websocket send Message:");
     console.log(sendData);
     websocket.send(sendData);
 }
@@ -37,8 +38,10 @@ const receiveMessage = (event, callback) => {
 
     websocket.addEventListener('message', function (message) {
         const json = JSON.parse(message.data);
-        if (json.event.e === event) {
-            callback(obj.message);
+        if (json.event.event === event) {
+            console.log("websocket receive Message :");
+            console.log(json);
+            callback(JSON.parse(json.message));
         }
     });
 }
