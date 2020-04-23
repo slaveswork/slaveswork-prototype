@@ -1,5 +1,5 @@
 const Events = {
-    appHostStart            : "app.event.host",
+    appHostStart            : "app.host.start",
     appWorkerStart          : "app.worker.start",
     appGenerateToken        : "app.generate.token",
     appConnectDevice        : "app.connect.device",
