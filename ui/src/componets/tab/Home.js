@@ -8,7 +8,7 @@ const genToken = () => {
     sendMessage(Events.appGenerateToken, {})
 }
 
-const Home = ({ ip, token, setToken }) => {
+const Home = ({ ip, token }) => {
 
     return (
         <div className="tab">
