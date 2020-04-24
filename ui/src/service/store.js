@@ -1,7 +1,7 @@
 import { configureStore, createSlice, combineReducers } from '@reduxjs/toolkit';
 
 const info = createSlice({
-    name: 'ipReducer',
+    name: 'infoReducer',
     initialState: { ip: "127.0.0.1", token : ""},
     reducers: {
         setIp: (state, action) => {
@@ -19,19 +19,6 @@ export const {
     setIp,
     setToken
 } = info.actions;
-
-
-// const token = createSlice({
-//     name: 'tokenReducer',
-//     initialState: "",
-//     reducers: {
-       
-//     }
-// });
-
-// export const {
-//     setToken
-// } = token.actions;
 
 const devices = createSlice({
     name: 'devicesReducer',
