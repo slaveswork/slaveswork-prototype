@@ -16,7 +16,7 @@ const connect = () => {
         websocket = new WebSocket("ws://localhost:" + global.backendPort + "/web/app/events");
         websocket.addEventListener('message', function (message) {
             const json = JSON.parse(message.data);
-            onsole.log("websocket receive Message :");
+            console.log("websocket receive Message :");
             console.log(json);
         });
     }

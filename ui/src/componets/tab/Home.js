@@ -35,9 +35,10 @@ const Home = ({ ip, token }) => {
 }
 
 const getCurrentState = (state, ownProps) => {
+    console.log(state);
     return {
-        ip: state.ip,
-        token: state.token
+        ip: state.info.ip,
+        token: state.info.token
     };
 }
 
