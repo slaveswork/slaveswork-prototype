@@ -1,36 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Events, sendMessage, receiveMessage } from '../../service/Message';
+import React from 'react';
+import { Events, sendMessage } from '../../service/Message';
+import { connect } from 'react-redux';
+
 import './Home.css';
 
 const genToken = () => {
     sendMessage(Events.appGenerateToken, {})
 }
 
-const useToken = () => {
-    const [token, setToken] = useState("");
-    useEffect(() => {
-        receiveMessage(Events.windowSendToken, (data) => {
-            const message = JSON.parse(data)
-            setToken(message.token)
-        })
-    }, [token]);
-    return token;
-}
-
-const useIp = () => {
-    const [ip, setIp] = useState("127.0.0.1");
-    useEffect(() => {
-        receiveMessage(Events.windowNetworkStatus, (data) => {
-            const message = JSON.parse(data)
-            setIp(message.ip)
-        })
-    }, [ip]);
-    return ip;
-}
-
-const Home = () => {
-    const token = useToken();
-    const ip = useIp();
+const Home = ({ ip, token }) => {
 
     return (
         <div className="tab">
@@ -56,4 +34,12 @@ const Home = () => {
     );
 }
 
-export default Home;
+const getCurrentState = (state, ownProps) => {
+    return {
+        ip: state.ip,
+        token: state.token
+    };
+}
+
+
+export default connect(getCurrentState)(Home);

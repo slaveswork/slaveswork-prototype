@@ -3,7 +3,10 @@ import TabMenuBar from '../../componets/tab_menu_bar/TabMenuBar';
 import Home from '../../componets/tab/Home';
 import Device from '../../componets/tab/Device';
 import Task from '../../componets/tab/Task';
-import { Events, sendMessage } from '../../service/Message';
+import { Events, sendMessage, receiveMessage } from '../../service/Message';
+import { connect } from 'react-redux';
+import { setIp, setToken } from '../../service/store'
+
 import './Host.css'
 
 const menuArray = [
@@ -21,8 +24,22 @@ const menuArray = [
     }
 ];
 
-const Host = () => {
+const onMessageIp = (setIp) => {
+    receiveMessage(Events.windowNetworkStatus, (message) => {
+        setIp(message.ip);
+    });
+}
+
+const onMessageToken = (setToken) => {
+    receiveMessage(Events.windowSendToken, (message) => {
+        setToken(message.token);
+    })
+}
+
+const Host = ({ setIp, setToken }) => {
     sendMessage(Events.appHostStart);
+    onMessageIp(setIp);
+    onMessageToken(setToken);
 
     return (
         <div id="wrapper">
@@ -40,4 +57,11 @@ const Host = () => {
     )
 }
 
-export default Host;
+const mapDispatchToProps = (dispatch, ownProps) => {
+    return {
+        setIp: (ip) => dispatch(setIp(ip)),
+        setToken: (token) => dispatch(setToken(token))
+    }
+}
+
+export default connect(undefined, mapDispatchToProps)(Host);

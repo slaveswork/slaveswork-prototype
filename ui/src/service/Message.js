@@ -1,19 +1,25 @@
 const Events = {
-    appHostStart            : "app.host.start",
-    appWorkerStart          : "app.worker.start",
-    appGenerateToken        : "app.generate.token",
-    appConnectDevice        : "app.connect.device",
-    windowDeviceStatus      : "window.device.status",
-    windowNetworkStatus     : "window.network.status",
-    windowTaskProgress      : "window.task.progress",
-    windowSendToken         : "window.send.token"
+    appHostStart: "app.host.start",
+    appWorkerStart: "app.worker.start",
+    appGenerateToken: "app.generate.token",
+    appConnectDevice: "app.connect.device",
+    windowDeviceStatus: "window.device.status",
+    windowNetworkStatus: "window.network.status",
+    windowTaskProgress: "window.task.progress",
+    windowSendToken: "window.send.token"
 };
 
 let websocket = undefined;
 
 const connect = () => {
-    if (websocket === undefined)
+    if (websocket === undefined){
         websocket = new WebSocket("ws://localhost:" + global.backendPort + "/web/app/events");
+        websocket.addEventListener('message', function (message) {
+            const json = JSON.parse(message.data);
+            onsole.log("websocket receive Message :");
+            console.log(json);
+        });
+    }
 }
 
 const sendMessage = (event, message = {}) => {
@@ -25,6 +31,7 @@ const sendMessage = (event, message = {}) => {
         "event": event,
         "message": message,
     });
+    console.log("websocket send Message:");
     console.log(sendData);
     websocket.send(sendData);
 }
@@ -37,11 +44,12 @@ const receiveMessage = (event, callback) => {
 
     websocket.addEventListener('message', function (message) {
         const json = JSON.parse(message.data);
-        if (json.event.e === event) {
-            callback(obj.message);
+        if (json.event.event === event) {
+            callback(JSON.parse(json.message));
         }
     });
 }
+
 
 export {
     Events,
