@@ -5,7 +5,7 @@ import Device from '../../componets/tab/Device';
 import Task from '../../componets/tab/Task';
 import { Events, sendMessage, receiveMessage } from '../../service/Message';
 import { connect } from 'react-redux';
-import { setIp, setToken } from '../../service/store'
+import { setIp, setToken, addDevice, removeDevice } from '../../service/store'
 
 import './Host.css'
 
@@ -36,10 +36,23 @@ const onMessageToken = (setToken) => {
     })
 }
 
-const Host = ({ setIp, setToken }) => {
+const onMessageDeviceManager = (addDevice) => {
+    receiveMessage(Events.windowDeviceStatus, (message) => {
+        if (message.method === "add") {
+            addDevice({ device: message });
+        }
+        /* todo :
+            else if (message.method === "update"){}
+            else if (message.method === "delete"){}
+        */
+    })
+}
+
+const Host = ({ setIp, setToken, addDevice }) => {
     sendMessage(Events.appHostStart);
     onMessageIp(setIp);
     onMessageToken(setToken);
+    onMessageDeviceManager(addDevice);
 
     return (
         <div id="wrapper">
@@ -60,7 +73,8 @@ const Host = ({ setIp, setToken }) => {
 const mapDispatchToProps = (dispatch, ownProps) => {
     return {
         setIp: (ip) => dispatch(setIp(ip)),
-        setToken: (token) => dispatch(setToken(token))
+        setToken: (token) => dispatch(setToken(token)),
+        addDevice: (device) => dispatch(addDevice(device)),
     }
 }
 
