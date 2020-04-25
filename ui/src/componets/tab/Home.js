@@ -8,7 +8,7 @@ const genToken = () => {
     sendMessage(Events.appGenerateToken, {})
 }
 
-const Home = ({ ip, token }) => {
+const Home = ({ ip, port, token }) => {
 
     return (
         <div className="tab">
@@ -20,7 +20,7 @@ const Home = ({ ip, token }) => {
                 </li>
                 <li>
                     <label>Port</label>
-                    <p>: {global.backendPort}</p>
+                    <p>: {port}</p>
                 </li>
                 <li>
                     <label>Token</label>

@@ -2,7 +2,7 @@ import { configureStore, createSlice, combineReducers } from '@reduxjs/toolkit';
 
 const info = createSlice({
     name: 'infoReducer',
-    initialState: { ip: "127.0.0.1", port: "",token : ""},
+    initialState: { ip: "127.0.0.1", port: "", token: "" },
     reducers: {
         setIp: (state, action) => {
             state.ip = action.payload
