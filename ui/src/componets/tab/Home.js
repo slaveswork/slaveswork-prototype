@@ -35,11 +35,12 @@ const Home = ({ ip, token }) => {
 }
 
 const getCurrentState = (state, ownProps) => {
+    console.log("host home state :")
+    console.log(state);
     return {
-        ip: state.ip,
-        token: state.token
+        ip: state.info.ip,
+        token: state.info.token
     };
 }
-
 
 export default connect(getCurrentState)(Home);
