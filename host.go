@@ -2,10 +2,12 @@ package main
 
 import (
 	"crypto/sha1"
+	"fmt"
 	"github.com/Equanox/gotron"
 	"github.com/gorilla/websocket"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -28,17 +30,26 @@ slaveswork_back --- main.go
 */
 
 type networkStatusEvent struct {
-	*gotron.Event
+	Event   *gotron.Event         `json:"event"`
 	Message *networkStatusMessage `json:"message"`
 }
 
+func (n networkStatusEvent) EventString() string {
+	panic("implement me")
+}
+
 type networkStatusMessage struct {
-	IP string `json:"ip"`
+	IP   string `json:"ip"`
+	Port string `json:"port"`
 }
 
 type sendTokenEvent struct {
-	*gotron.Event
+	Event   *gotron.Event     `json:"event"`
 	Message *sendTokenMessage `json:"message"`
+}
+
+func (s sendTokenEvent) EventString() string {
+	panic("implement me")
 }
 
 type sendTokenMessage struct {
@@ -55,48 +66,66 @@ func newHost(w *gotron.BrowserWindow) *Host {
 }
 
 func (h *Host) run() {
-	ip := getIPAddress()
+	listener, err := net.Listen("tcp", ":0")
+	if err != nil {
+		panic(err)
+	}
+
+	ip    := getIPAddress()
+	port  := strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
 	token := makeToken(ip)
 
-	h.window.Send(&networkStatusEvent{
+	messgae := networkStatusEvent {
 		Event:   &gotron.Event{Event: "window.network.status"},
 		Message: &networkStatusMessage{
 			IP: ip,
+			Port: port,
 		},
-	})
+	}
+
+	h.window.Send(messgae)
+
+	tokenMessage := sendTokenEvent {
+		Event:   &gotron.Event{Event: "window.send.token"},
+		Message: &sendTokenMessage{
+			Token: token,
+		},
+	}
 
 	h.window.On(&gotron.Event{Event: "app.generate.token"}, func(bin []byte) {
-		h.window.Send(&sendTokenEvent{
-			Event:   &gotron.Event{Event: "window.send.token"},
-			Message: &sendTokenMessage{
-				Token: token,
-			},
-		})
+		h.window.Send(tokenMessage)
 	})
+
+	// waiting for channel...
+	go func() {
+		for {
+			select {
+			case worker := <-h.register:
+				h.workers[worker] = true
+			case worker := <-h.unregister:
+				if _, ok := h.workers[worker]; ok {
+					delete(h.workers, worker)
+				}
+			}
+		}
+	}()
 
 	// make handler for worker's connection request.
 	// Register handler.
-	http.HandleFunc("/host.connect.worker", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/connectWorker", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Received Request for connection with worker")
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			panic(err)
 		}
 
+		// create worker for management
 		worker := &Worker{window: nil, conn: conn}
-		h.register <- worker
+		h.register <- worker // register worker
 	})
 
-	// waiting for channel...
-	for {
-		select {
-		case worker := <-h.register:
-			h.workers[worker] = true
-		case worker := <-h.unregister:
-			if _, ok := h.workers[worker]; ok {
-				delete(h.workers, worker)
-			}
-		}
-	}
+	// Start HandleFunc
+	http.Serve(listener, nil)
 }
 
 /*
@@ -129,7 +158,7 @@ func makeToken(ip string) string {
 	interfaces, _ := net.Interfaces()
 
 	for _, interf := range interfaces {
-		if addrs, err := interf.Addrs(); err != nil {
+		if addrs, err := interf.Addrs(); err == nil {
 			for _, addr := range addrs {
 				if strings.Contains(addr.String(), ip) {
 					currentNetworkHardwareName = interf.Name
@@ -147,7 +176,7 @@ func makeToken(ip string) string {
 	h := sha1.New()
 	h.Write([]byte(macAddress))
 	bs := h.Sum(nil)
+	token := fmt.Sprintf("%x", bs)
 
-	// TODO Should be modified
-	return string(bs[:12])
+	return token[:12]
 }
