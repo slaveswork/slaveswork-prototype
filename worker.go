@@ -1,14 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/Equanox/gotron"
 	"github.com/gorilla/websocket"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"net/url"
 )
 
@@ -33,7 +30,7 @@ type connectionEvent struct {
 
 type connectionMessage struct {
 	IP    string `json:"ip"`
-	Port  uint16 `json:"port"`
+	Port  string `json:"port"`
 	Token string `json:"token"`
 }
 
@@ -54,14 +51,16 @@ func (w *Worker) run() {
 
 	w.window.On(&gotron.Event{Event: "app.connect.device"}, func(bin []byte) {
 		// make connection request for host.
+		fmt.Println(fmt.Sprintf("%x", string(bin)))
 		if err := json.Unmarshal(bin, &connEvent); err != nil {
-			panic(err)
+			log.Fatal("App connect JSON parsing : ", err)
 		}
 
 		// connection message's port is missing. But host do 'not' need that.
 		// TODO IP can change to MAC address.
+		// TODO Change JSON to another.
 		connRequestEvent := &hostConnectionEvent{
-			Event:   "",
+			Event:   "host.connect.worker",
 			Message: &connectionMessage{
 				IP:    getIPAddress(),           // worker's IP address.
 				Token: connEvent.Message.Token,  // host's Token for validation.
@@ -69,27 +68,26 @@ func (w *Worker) run() {
 		}
 
 		u := url.URL{
-			Scheme: "http",
+			Scheme: "ws",
 			Host:   connEvent.makeHostAddress(),
-			Path:   "/host.connect.worker",
+			Path:   "/connectWorker",
 		}
+		fmt.Printf("Connecting to %s\n", u.String())
 
-		// Send http request to host with POST method.
-		eventMessage, _ := json.Marshal(connRequestEvent)
-		eventMessageBuff := bytes.NewBuffer(eventMessage)
-
-		resp, err := http.Post(u.String(), "application/json", eventMessageBuff)
+		conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 		if err != nil {
-			panic(err)
+			log.Fatal("dial : ", err)
 		}
 
-		result, _ := ioutil.ReadAll(resp.Body)
-		resp.Body.Close()
+		defer conn.Close()
 
-		log.Println(result)
+		if err := conn.WriteJSON(connRequestEvent); err != nil {
+			log.Fatal("Connection Device WriteJSON error : ", err)
+		}
+		w.conn = conn
 	})
 }
 
 func (c *connectionEvent) makeHostAddress() string {
-	return fmt.Sprintf("%s:%d", c.Message.IP, c.Message.Port)
+	return fmt.Sprintf("%s:%s", c.Message.IP, c.Message.Port)
 }

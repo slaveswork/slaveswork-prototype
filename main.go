@@ -19,11 +19,8 @@ func main() {
 	// Open dev tools must be used after window.Start
 	window.OpenDevTools()
 
-	ReceiveMessage(window, EventHost, func(bin []byte) {
-		//Event Handler
-	})
+	processEvent(window)
 
-	SendMessage(window, EventHost, "hello world")
 	// Wait for the application to close
 	<- done
 }
@@ -40,4 +37,16 @@ func app() *gotron.BrowserWindow {
 	window.WindowOptions.Title = "Slave's work"
 
 	return window
+}
+
+func processEvent(w *gotron.BrowserWindow) {
+	w.On(&gotron.Event{Event: "app.host.start"}, func(bin []byte) {
+		host := newHost(w)
+		go host.run()
+	})
+
+	w.On(&gotron.Event{Event: "app.worker.start"}, func(bin []byte) {
+		worker := newWorker(w)
+		go worker.run()
+	})
 }
