@@ -39,6 +39,7 @@ const getCurrentState = (state, ownProps) => {
     console.log(state);
     return {
         ip: state.info.ip,
+        port: state.info.port,
         token: state.info.token
     };
 }
