@@ -5,7 +5,7 @@ import Device from '../../componets/tab/Device';
 import Task from '../../componets/tab/Task';
 import { Events, sendMessage, receiveMessage } from '../../service/Message';
 import { connect } from 'react-redux';
-import { setIp, setToken, addDevice, removeDevice } from '../../service/store'
+import { setIp, setPort, setToken, addDevice, removeDevice } from '../../service/store'
 
 import './Host.css'
 
@@ -24,9 +24,10 @@ const menuArray = [
     }
 ];
 
-const onMessageIp = (setIp) => {
+const onMessageInfo = (setIp, setPort) => {
     receiveMessage(Events.windowNetworkStatus, (message) => {
         setIp(message.ip);
+        setPort(message.port);
     });
 }
 
@@ -48,9 +49,9 @@ const onMessageDeviceManager = (addDevice) => {
     })
 }
 
-const Host = ({ setIp, setToken, addDevice }) => {
+const Host = ({ setIp, setPort, setToken, addDevice }) => {
     sendMessage(Events.appHostStart);
-    onMessageIp(setIp);
+    onMessageInfo(setIp, setPort);
     onMessageToken(setToken);
     onMessageDeviceManager(addDevice);
 
@@ -73,6 +74,7 @@ const Host = ({ setIp, setToken, addDevice }) => {
 const mapDispatchToProps = (dispatch, ownProps) => {
     return {
         setIp: (ip) => dispatch(setIp(ip)),
+        setPort: (port) => dispatch(setPort(port)),
         setToken: (token) => dispatch(setToken(token)),
         addDevice: (device) => dispatch(addDevice(device)),
     }
