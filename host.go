@@ -1,14 +1,13 @@
 package main
 
 import (
-	"crypto/sha1"
 	"fmt"
 	"github.com/Equanox/gotron"
 	"github.com/gorilla/websocket"
 	"net"
 	"net/http"
+	"slaveswork/slaveswork-prototype/message"
 	"strconv"
-	"strings"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -18,42 +17,6 @@ type Host struct {
 	workers    map[*Worker]bool
 	register   chan *Worker
 	unregister chan *Worker
-}
-
-/*
-TODO make a package for these Event Message structures.
-slaveswork_back --- main.go
-                 +- worker.go
-                 +- host.go
-                 |
-                 +- event --- event.go
-*/
-
-type networkStatusEvent struct {
-	Event   *gotron.Event         `json:"event"`
-	Message *networkStatusMessage `json:"message"`
-}
-
-func (n networkStatusEvent) EventString() string {
-	panic("implement me")
-}
-
-type networkStatusMessage struct {
-	IP   string `json:"ip"`
-	Port string `json:"port"`
-}
-
-type sendTokenEvent struct {
-	Event   *gotron.Event     `json:"event"`
-	Message *sendTokenMessage `json:"message"`
-}
-
-func (s sendTokenEvent) EventString() string {
-	panic("implement me")
-}
-
-type sendTokenMessage struct {
-	Token string `json:"token"`
 }
 
 func newHost(w *gotron.BrowserWindow) *Host {
@@ -75,25 +38,25 @@ func (h *Host) run() {
 	port  := strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
 	token := makeToken(ip)
 
-	messgae := networkStatusEvent {
+	networkStatusMessage := message.WindowNetworkStatusEvent{
 		Event:   &gotron.Event{Event: "window.network.status"},
-		Message: &networkStatusMessage{
-			IP: ip,
+		Message: &message.WindowNetworkStatusMessage{
+			IP:   ip,
 			Port: port,
 		},
 	}
 
-	h.window.Send(messgae)
+	h.window.Send(networkStatusMessage)
 
-	tokenMessage := sendTokenEvent {
+	sendTokenMessage := message.WindowSendTokenEvent{
 		Event:   &gotron.Event{Event: "window.send.token"},
-		Message: &sendTokenMessage{
+		Message: &message.WindowSendTokenMessage{
 			Token: token,
 		},
 	}
 
 	h.window.On(&gotron.Event{Event: "app.generate.token"}, func(bin []byte) {
-		h.window.Send(tokenMessage)
+		h.window.Send(sendTokenMessage)
 	})
 
 	// waiting for channel...
@@ -102,9 +65,11 @@ func (h *Host) run() {
 			select {
 			case worker := <-h.register:
 				h.workers[worker] = true
+
 			case worker := <-h.unregister:
 				if _, ok := h.workers[worker]; ok {
 					delete(h.workers, worker)
+					worker.conn.Close()
 				}
 			}
 		}
@@ -126,57 +91,4 @@ func (h *Host) run() {
 
 	// Start HandleFunc
 	http.Serve(listener, nil)
-}
-
-/*
-Now, this function is 'Public' method.
-But worker also need this function for finding worker's IP address.
-So make another package for methods like this.
- */
-func getIPAddress() string {
-	addresses, err := net.InterfaceAddrs()
-	if err != nil {
-		panic(err)
-	}
-
-	var currentIP string
-
-	for _, address := range addresses {
-		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() {
-			if ipNet.IP.To4() != nil {
-				currentIP = ipNet.IP.String()
-			}
-		}
-	}
-
-	return currentIP
-}
-
-func makeToken(ip string) string {
-	var currentNetworkHardwareName string
-
-	interfaces, _ := net.Interfaces()
-
-	for _, interf := range interfaces {
-		if addrs, err := interf.Addrs(); err == nil {
-			for _, addr := range addrs {
-				if strings.Contains(addr.String(), ip) {
-					currentNetworkHardwareName = interf.Name
-				}
-			}
-		}
-	}
-
-	netInterface, err := net.InterfaceByName(currentNetworkHardwareName)
-	if err != nil {
-		panic(err)
-	}
-
-	macAddress := netInterface.HardwareAddr
-	h := sha1.New()
-	h.Write([]byte(macAddress))
-	bs := h.Sum(nil)
-	token := fmt.Sprintf("%x", bs)
-
-	return token[:12]
 }
