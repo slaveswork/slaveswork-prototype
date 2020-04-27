@@ -12,7 +12,7 @@ const Events = {
 let websocket = undefined;
 
 const connect = () => {
-    if (websocket === undefined){
+    if (websocket === undefined) {
         websocket = new WebSocket("ws://localhost:" + global.backendPort + "/web/app/events");
         websocket.addEventListener('message', function (message) {
             const json = JSON.parse(message.data);

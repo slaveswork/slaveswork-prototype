@@ -3,7 +3,7 @@ import { Route, HashRouter } from 'react-router-dom';
 import Main from './routes/main/Main';
 import Host from './routes/host/Host';
 import Worker from './routes/worker/Worker';
-import {connect} from './service/Message'
+import { connect } from './service/Message'
 import './App.css';
 
 
