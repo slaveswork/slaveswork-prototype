@@ -1,13 +1,15 @@
 package main
 
 import (
+	"crypto/sha1"
 	"fmt"
 	"github.com/Equanox/gotron"
 	"github.com/gorilla/websocket"
 	"net"
 	"net/http"
-	"slaveswork/slaveswork-prototype/message"
+	"github.com/slaveswork/slaveswork-prototype/message"
 	"strconv"
+	"strings"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -38,9 +40,9 @@ func (h *Host) run() {
 	port  := strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
 	token := makeToken(ip)
 
-	networkStatusMessage := message.WindowNetworkStatusEvent{
-		Event:   &gotron.Event{Event: "window.network.status"},
-		Message: &message.WindowNetworkStatusMessage{
+	networkStatusMessage := message.GotronMessage{
+		Event: &gotron.Event{Event: "window.network.status"},
+		Body:  &message.WindowNetworkStatusMessage{
 			IP:   ip,
 			Port: port,
 		},
@@ -48,9 +50,9 @@ func (h *Host) run() {
 
 	h.window.Send(networkStatusMessage)
 
-	sendTokenMessage := message.WindowSendTokenEvent{
-		Event:   &gotron.Event{Event: "window.send.token"},
-		Message: &message.WindowSendTokenMessage{
+	sendTokenMessage := message.GotronMessage{
+		Event: &gotron.Event{Event: "window.send.token"},
+		Body:  &message.WindowSendTokenMessage{
 			Token: token,
 		},
 	}
@@ -91,4 +93,33 @@ func (h *Host) run() {
 
 	// Start HandleFunc
 	http.Serve(listener, nil)
+}
+
+func makeToken(ip string) string {
+	var currentNetworkHardwareName string
+
+	interfaces, _ := net.Interfaces()
+
+	for _, interf := range interfaces {
+		if addrs, err := interf.Addrs(); err == nil {
+			for _, addr := range addrs {
+				if strings.Contains(addr.String(), ip) {
+					currentNetworkHardwareName = interf.Name
+				}
+			}
+		}
+	}
+
+	netInterface, err := net.InterfaceByName(currentNetworkHardwareName)
+	if err != nil {
+		panic(err)
+	}
+
+	macAddress := netInterface.HardwareAddr
+	h := sha1.New()
+	h.Write([]byte(macAddress))
+	bs := h.Sum(nil)
+	token := fmt.Sprintf("%x", bs)
+
+	return token[:12]
 }
