@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/url"
+	"slaveswork/slaveswork-prototype/message"
 )
 
 type Worker struct {
@@ -14,69 +15,50 @@ type Worker struct {
 	conn   *websocket.Conn
 }
 
-/*
-TODO make a package for these Event Message structures.
-slaveswork_back --- main.go
-                 +- worker.go
-                 +- host.go
-                 |
-                 +- event --- event.go
-*/
-
-type connectionEvent struct {
-	*gotron.Event
-	Message *connectionMessage `json:"message"`
-}
-
-type connectionMessage struct {
-	IP    string `json:"ip"`
-	Port  string `json:"port"`
-	Token string `json:"token"`
-}
-
-type hostConnectionEvent struct {
-	Event string `json:"event"`
-	Message *connectionMessage `json:"message"`
-}
-
 func newWorker(w *gotron.BrowserWindow) *Worker {
-	return &Worker {
+	return &Worker{
 		window: w,
 		conn:   nil,
 	}
 }
 
 func (w *Worker) run() {
-	var connEvent connectionEvent
+	var appConnectionDeviceEvent message.AppConnectionDeviceEvent
 
 	w.window.On(&gotron.Event{Event: "app.connect.device"}, func(bin []byte) {
 		// make connection request for host.
 		fmt.Println(fmt.Sprintf("%x", string(bin)))
-		if err := json.Unmarshal(bin, &connEvent); err != nil {
-			log.Fatal("App connect JSON parsing : ", err)
+		if err := json.Unmarshal(bin, &appConnectionDeviceEvent); err != nil {
+			log.Fatal("JSON parsing : ", err)
 		}
 
 		// connection message's port is missing. But host do 'not' need that.
 		// TODO IP can change to MAC address.
 		// TODO Change JSON to another.
-		connRequestEvent := &hostConnectionEvent{
+		connRequestMessage := &message.HostConnectWorkerMessage{
+			Token: appConnectionDeviceEvent.Message.Token, // Token for validation.
+		}
+
+		bMessage, err := json.Marshal(connRequestMessage)
+		if err != nil {
+			log.Fatal("Connection Request Marshal : ", err)
+		}
+
+		connRequestEvent := &message.AppWebSocketEvent{
 			Event:   "host.connect.worker",
-			Message: &connectionMessage{
-				IP:    getIPAddress(),           // worker's IP address.
-				Token: connEvent.Message.Token,  // host's Token for validation.
-			},
+			Message: string(bMessage),
 		}
 
 		u := url.URL{
 			Scheme: "ws",
-			Host:   connEvent.makeHostAddress(),
+			Host:   appConnectionDeviceEvent.Message.MakeHostAddress(),
 			Path:   "/connectWorker",
 		}
 		fmt.Printf("Connecting to %s\n", u.String())
 
 		conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 		if err != nil {
-			log.Fatal("dial : ", err)
+			log.Fatal("Connection Websocket Dial : ", err)
 		}
 
 		defer conn.Close()
@@ -86,8 +68,4 @@ func (w *Worker) run() {
 		}
 		w.conn = conn
 	})
-}
-
-func (c *connectionEvent) makeHostAddress() string {
-	return fmt.Sprintf("%s:%s", c.Message.IP, c.Message.Port)
 }
