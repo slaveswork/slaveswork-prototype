@@ -29,7 +29,7 @@ const sendMessage = (event, message = {}) => {
     };
     const sendData = JSON.stringify({
         "event": event,
-        "message": message,
+        "body": message,
     });
     console.log("websocket send Message:");
     console.log(sendData);
@@ -45,7 +45,7 @@ const receiveMessage = (event, callback) => {
     websocket.addEventListener('message', function (message) {
         const json = JSON.parse(message.data);
         if (json.event.event === event) {
-            callback(json.message);
+            callback(json.body);
         }
     });
 }
