@@ -32,6 +32,14 @@ const devices = createSlice({
         addDevice: (state, action) => {
             state.push(action.payload.device);
         },
+        updateDevice: (state, action) => {
+            state.forEach(device => {
+                if (device.id === action.payload.device.id){
+                    device.cpu = action.payload.device.cpu;
+                    device.memory = action.payload.device.memory;
+                }
+            })
+        },
         removeDevice: (state, action) => {
             state.filter(device => device.id !== action.payload)
         }
@@ -40,6 +48,7 @@ const devices = createSlice({
 
 export const {
     addDevice,
+    updateDevice,
     removeDevice
 } = devices.actions;
 
