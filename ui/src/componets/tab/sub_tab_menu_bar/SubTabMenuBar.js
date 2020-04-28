@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import './SubTabMenuBar.css';
 
-const SubTabMenuBar = (props) =>{
+const SubTabMenuBar = (props) => {
     const [menuArray, setMenuArray] = useState(props.subMenu);
     const [selected, setSelected] = useState(0);
 
-    return (    
+    return (
         <div id="sub_tab_menu">
             <div id="sub_tab_menu_bar">
                 <ul>

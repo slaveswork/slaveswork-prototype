@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import './TabMenuBar.css'
 
 const TabMenuBar = (props) => {
@@ -22,7 +23,6 @@ const TabMenuBar = (props) => {
                                     <p>{menu.title}</p> :
                                     <p className="gray">{menu.title}</p>}
                             </li>
-
                         );
                     })}
                 </ul>
