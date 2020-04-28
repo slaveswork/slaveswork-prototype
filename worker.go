@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/url"
-	"slaveswork/slaveswork-prototype/message"
+	"github.com/slaveswork/slaveswork-prototype/message"
 )
 
 type Worker struct {

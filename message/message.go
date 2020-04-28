@@ -1,15 +1,18 @@
 package message
 
-import "github.com/Equanox/gotron"
+import (
+	"fmt"
+	"github.com/Equanox/gotron"
+)
 
-type AppWebSocketEvent struct {
-	Event   string `json:"event"`
-	Message string `json:"message"`
+type GotronMessage struct {
+	*gotron.Event    `json:"event"`
+	Body interface{} `json:"body"`
 }
 
-type AppConnectionDeviceEvent struct {
-	*gotron.Event                       `json:"event"`
-	Message *AppConnectionDeviceMessage `json:"message"`
+type AppMessage struct {
+	Event string      `json:"event"`
+ 	Body  interface{} `json:"body"`
 }
 
 type AppConnectionDeviceMessage struct {
@@ -18,25 +21,15 @@ type AppConnectionDeviceMessage struct {
 	Token string `json:"token"`
 }
 
-type WindowNetworkStatusEvent struct {
-	*gotron.Event                       `json:"event"`
-	Message *WindowNetworkStatusMessage `json:"message"`
-}
-
 type WindowNetworkStatusMessage struct {
 	IP   string `json:"ip"`
 	Port string `json:"port"`
-}
-
-type WindowSendTokenEvent struct {
-	*gotron.Event                   `json:"event"`
-	Message *WindowSendTokenMessage `json:"message"`
 }
 
 type WindowSendTokenMessage struct {
 	Token string `json:"token"`
 }
 
-type HostConnectWorkerMessage struct {
-	Token string `json:"token"`
+func (c *AppConnectionDeviceMessage) MakeHostAddress() string {
+	return fmt.Sprintf("%s:%s", c.IP, c.Port)
 }
