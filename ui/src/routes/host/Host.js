@@ -5,7 +5,7 @@ import Device from '../../componets/tab/Device';
 import Task from '../../componets/tab/Task';
 import { Events, sendMessage, receiveMessage } from '../../service/Message';
 import { connect } from 'react-redux';
-import { setIp, setPort, setToken, addDevice, removeDevice } from '../../service/store'
+import { setIp, setPort, setToken, addDevice, updateDevice } from '../../service/store'
 
 import './Host.css'
 
@@ -41,9 +41,10 @@ const onMessageDeviceManager = (addDevice) => {
     receiveMessage(Events.windowDeviceStatus, (message) => {
         if (message.method === "add") {
             addDevice({ device: message });
+        } else if (message.method === "update") {
+            updateDevice({ device: message })
         }
         /* todo :
-            else if (message.method === "update"){}
             else if (message.method === "delete"){}
         */
     })
@@ -77,6 +78,7 @@ const mapDispatchToProps = (dispatch, ownProps) => {
         setPort: (port) => dispatch(setPort(port)),
         setToken: (token) => dispatch(setToken(token)),
         addDevice: (device) => dispatch(addDevice(device)),
+        updateDevice: (device) => dispatch(updateDevice(device)),
     }
 }
 

@@ -5,10 +5,10 @@ import SubTabMenuBar from './sub_tab_menu_bar/SubTabMenuBar'
 
 const subMenu = [
     {
-        title:"Blender"
+        title: "Blender"
     },
     {
-        title:"Developing"
+        title: "Developing"
     }
 ]
 
@@ -16,8 +16,8 @@ const Task = () => {
     return (
         <div className="tab">
             <SubTabMenuBar subMenu={subMenu}>
-                <Blender/>
-                <Developing/>
+                <Blender />
+                <Developing />
             </SubTabMenuBar>
         </div>
     );
