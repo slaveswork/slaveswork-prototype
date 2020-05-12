@@ -37,7 +37,7 @@ const onMessageToken = (setToken) => {
     })
 }
 
-const onMessageDeviceManager = (addDevice) => {
+const onMessageDeviceManager = (addDevice, updateDevice) => {
     receiveMessage(Events.windowDeviceStatus, (message) => {
         if (message.method === "add") {
             addDevice({ device: message });
@@ -50,11 +50,11 @@ const onMessageDeviceManager = (addDevice) => {
     })
 }
 
-const Host = ({ setIp, setPort, setToken, addDevice }) => {
+const Host = ({ setIp, setPort, setToken, addDevice, updateDevice }) => {
     sendMessage(Events.appHostStart);
     onMessageInfo(setIp, setPort);
     onMessageToken(setToken);
-    onMessageDeviceManager(addDevice);
+    onMessageDeviceManager(addDevice, updateDevice);
 
     return (
         <div id="wrapper">
