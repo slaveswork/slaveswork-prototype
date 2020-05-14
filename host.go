@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/Equanox/gotron"
 	"github.com/gorilla/websocket"
+	"github.com/slaveswork/slaveswork-prototype/message"
 	"net"
 	"net/http"
-	"github.com/slaveswork/slaveswork-prototype/message"
 	"strconv"
 	"strings"
 )
@@ -19,67 +19,83 @@ type Host struct {
 	workers    map[*Worker]bool
 	register   chan *Worker
 	unregister chan *Worker
+	ip         string
+	port       string
+	token      string
 }
 
 func newHost(w *gotron.BrowserWindow) *Host {
-	return &Host {
+	return &Host{
 		window:     w,
 		workers:    make(map[*Worker]bool),
 		register:   make(chan *Worker),
 		unregister: make(chan *Worker),
+		ip:         "127.0.0.1",
+		port:       "80",
 	}
 }
 
 func (h *Host) run() {
+	listener := h.init()
+
+	h.handleWindowMessages()
+
+	h.handleHttpMessages(listener)
+}
+
+func (h *Host) init() net.Listener {
 	listener, err := net.Listen("tcp", ":0")
 	if err != nil {
 		panic(err)
 	}
 
-	ip    := getIPAddress()
-	port  := strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
-	token := makeToken(ip)
+	h.ip = getIPAddress()
+	h.port = strconv.Itoa(listener.Addr().(*net.TCPAddr).Port)
+	h.token = makeToken(h.ip)
 
-	networkStatusMessage := message.GotronMessage{
+	h.window.Send(message.WindowNetworkStatusMessage{
 		Event: &gotron.Event{Event: "window.network.status"},
-		Body:  &message.WindowNetworkStatusMessage{
-			IP:   ip,
-			Port: port,
+		Body: &message.WindowNetworkStatusBody{
+			IP:   h.ip,
+			Port: h.port,
 		},
-	}
-
-	h.window.Send(networkStatusMessage)
-
-	sendTokenMessage := message.GotronMessage{
-		Event: &gotron.Event{Event: "window.send.token"},
-		Body:  &message.WindowSendTokenMessage{
-			Token: token,
-		},
-	}
-
-	h.window.On(&gotron.Event{Event: "app.generate.token"}, func(bin []byte) {
-		h.window.Send(sendTokenMessage)
 	})
 
-	// waiting for channel...
 	go func() {
 		for {
 			select {
 			case worker := <-h.register:
 				h.workers[worker] = true
-
+				fmt.Println("Registered Worker...")
 			case worker := <-h.unregister:
 				if _, ok := h.workers[worker]; ok {
 					delete(h.workers, worker)
-					worker.conn.Close()
 				}
 			}
 		}
 	}()
 
+	return listener
+}
+
+func (h *Host) handleWindowMessages() {
+	h.window.On(&gotron.Event{Event: "app.generate.token"}, func(bin []byte) {
+		h.window.Send(message.WindowSendTokenMessage{
+			Event: &gotron.Event{Event: "window.send.token"},
+			Body:  &message.WindowSendTokenBody{
+				Token: h.token,
+			},
+		})
+	})
+}
+
+func (h *Host) handleHttpMessages(listener net.Listener) {
 	// make handler for worker's connection request.
 	// Register handler.
-	http.HandleFunc("/connectWorker", func(w http.ResponseWriter, r *http.Request) {
+	// Later, It should be replace with 'http.HandleFunc(pattern, connectionRequest)'
+	// connectionRequest <-- function name
+	pattern := fmt.Sprintf("/%s", h.token)
+	http.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Received Request for connection with worker")
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
