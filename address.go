@@ -21,3 +21,22 @@ func newAddress() (*Address, net.Listener) {
 
 	return &addr, listener // return address object and listener for http handler.
 }
+
+func getIP() string {
+	addresses, err := net.InterfaceAddrs()
+	if err != nil {
+		log.Fatal("func : getIP\nError : ", err)
+	}
+
+	var ip string
+
+	for _, address := range addresses {
+		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() {
+			if ipNet.IP.To4() != nil {
+				ip = ipNet.IP.String()
+			}
+		}
+	}
+
+	return ip
+}
