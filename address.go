@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net"
+	"strconv"
 )
 
 type Address struct {
@@ -17,18 +18,20 @@ func newAddress() (*Address, net.Listener) {
 		log.Fatal("func : newAddress\nError : ", err)
 	}
 
-
+	addr.ip = getIP() // get IP address
+	addr.port = strconv.Itoa(listener.Addr().(*net.TCPAddr).Port) // get Port number
 
 	return &addr, listener // return address object and listener for http handler.
 }
 
+// get IP address using 'net' package.
 func getIP() string {
 	addresses, err := net.InterfaceAddrs()
 	if err != nil {
 		log.Fatal("func : getIP\nError : ", err)
 	}
 
-	var ip string
+	var ip string // return value
 
 	for _, address := range addresses {
 		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() {
