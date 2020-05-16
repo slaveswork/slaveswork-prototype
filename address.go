@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha1"
+	"fmt"
 	"log"
 	"net"
 	"strconv"
@@ -42,4 +44,18 @@ func getIP() string {
 	}
 
 	return ip
+}
+
+func (a *Address) generateToken() string {
+	s := a.ip + a.port // IP -> string, Port -> string
+
+	// make SHA1 hash value --> can change another hash function
+	h := sha1.New()
+	h.Write([]byte(s)) // s -> "{ip}{port}" string value
+	bs := h.Sum(nil)
+
+	token := fmt.Sprintf("%x", bs) // byte slice to string
+
+	// SHA1 hash value is too long to be used by users.
+	return token[:12] // return only 12 characters(string).
 }
