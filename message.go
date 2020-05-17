@@ -17,7 +17,7 @@ type GotronMessage struct {
 }
 
 // Host's message sender : send message to window.
-func (h *Host) send(e string, b interface{}) {
+func (h *Host) send(e string) {
 	message := GotronMessage{
 		Event: &gotron.Event{Event: e},
 	}
@@ -25,7 +25,13 @@ func (h *Host) send(e string, b interface{}) {
 	switch e {
 	case "window.network.status":
 		message.Body, _ = message.Body.(Address) // convert interface{} to 'Address'(in main/address.go)
-		message.Body = b.(Address) // put parameter 'b' on message's Body. --> have to convert 'interface{}' to 'Address'(in main/address.go)
+		message.Body = h.address                 // put parameter 'b' on message's Body. --> have to convert 'interface{}' to 'Address'(in main/address.go)
+	case "window.send.token":
+		message.Body = struct {
+			Token string `json:"token"`
+		}{
+			Token: h.token,
+		}
 	}
 
 	prettyJson, err := json.MarshalIndent(message, "", "    ")

@@ -9,21 +9,21 @@ import (
 )
 
 type Address struct {
-	ip   string // IP address for application
-	port string // Port number for application --> can change to integer
+	IP   string `json:"ip"`   // IP address for application
+	Port string `json:"port"` // Port number for application --> can change to integer
 }
 
-func newAddress() (*Address, net.Listener) {
-	addr := Address{} // application address(IP + Port)
+func newAddress() (Address, net.Listener) {
+	addr := Address{}                        // application address(IP + Port)
 	listener, err := net.Listen("tcp", ":0") // for finding unused Port number.
 	if err != nil {
 		log.Fatal("func : newAddress\nError : ", err)
 	}
 
-	addr.ip = getIP() // get IP address
-	addr.port = strconv.Itoa(listener.Addr().(*net.TCPAddr).Port) // get Port number
+	addr.IP = getIP()                                             // get IP address
+	addr.Port = strconv.Itoa(listener.Addr().(*net.TCPAddr).Port) // get Port number
 
-	return &addr, listener // return address object and listener for http handler.
+	return addr, listener // return address object and listener for http handler.
 }
 
 // get IP address using 'net' package.
@@ -35,6 +35,7 @@ func getIP() string {
 
 	var ip string // return value
 
+	// valid IPv4 address(ignore Loop back address...127.0.0.1)
 	for _, address := range addresses {
 		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() {
 			if ipNet.IP.To4() != nil {
@@ -47,7 +48,7 @@ func getIP() string {
 }
 
 func (a *Address) generateToken() string {
-	s := a.ip + a.port // IP -> string, Port -> string
+	s := a.IP + a.Port // IP -> string, Port -> string | ex) "127.0.0.180" = "127.0.0.1"(IP) + "80"(Port)
 
 	// make SHA1 hash value --> can change another hash function
 	h := sha1.New()
