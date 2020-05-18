@@ -60,3 +60,8 @@ func (a *Address) generateToken() string {
 	// SHA1 hash value is too long to be used by users.
 	return token[:12] // return only 12 characters(string).
 }
+
+func (a *Address) generateHostAddress(path string) (url string) {
+	url = a.IP + ":" + a.Port + "/" + path
+	return
+}
