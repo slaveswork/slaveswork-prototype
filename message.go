@@ -34,11 +34,15 @@ func (h *Host) send(e string) {
 		}
 	}
 
+	checkJSON(message) // Printing Message for validation.
+	h.window.Send(message)
+}
+
+// Pretty printing JSON message.
+func checkJSON(message GotronMessage) {
 	prettyJson, err := json.MarshalIndent(message, "", "    ")
 	if err != nil {
 		log.Fatal("Failed to generate JSON", err)
 	}
 	fmt.Printf("%s\n", string(prettyJson))
-
-	h.window.Send(message)
 }

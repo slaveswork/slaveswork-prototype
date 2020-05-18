@@ -40,11 +40,12 @@ func app() *gotron.BrowserWindow {
 
 func runApp(w *gotron.BrowserWindow) {
 	w.On(&gotron.Event{Event: "app.host.start"}, func(bin []byte) {
-		h := newHost(w)
-		go h.run()
+		host := newHost(w)
+		go host.run()
 	})
 
 	w.On(&gotron.Event{Event: "app.worker.start"}, func(bin []byte) {
+		worker := newWorker(w)
 
 	})
 }
