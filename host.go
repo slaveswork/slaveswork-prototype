@@ -19,7 +19,7 @@ func newHost(w *gotron.BrowserWindow) *Host {
 
 func (h *Host) run() {
 	_ = h.init()
-	go h.gotronMessageHandler()
+	h.gotronMessageHandler()
 }
 
 func (h *Host) init() (listener net.Listener) {

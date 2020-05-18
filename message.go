@@ -12,8 +12,8 @@ func (g GotronMessage) EventString() string {
 }
 
 type GotronMessage struct {
-	Event *gotron.Event `json:"event"` // is event name.
-	Body  interface{}   `json:"body"`  // is actual content.
+	*gotron.Event // is event name.
+	Body  interface{} `json:"body"` // is actual content.
 }
 
 // Host's message sender : send message to window.
@@ -27,10 +27,10 @@ func (h *Host) send(e string) {
 		message.Body, _ = message.Body.(Address) // convert interface{} to 'Address'(in main/address.go)
 		message.Body = h.address                 // put parameter 'b' on message's Body. --> have to convert 'interface{}' to 'Address'(in main/address.go)
 	case "window.send.token":
-		message.Body = struct {
+		message.Body = struct { // temporary struct for sending token message.
 			Token string `json:"token"`
 		}{
-			Token: h.token,
+			Token: h.token, // initialize value.
 		}
 	}
 

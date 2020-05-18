@@ -46,6 +46,6 @@ func runApp(w *gotron.BrowserWindow) {
 
 	w.On(&gotron.Event{Event: "app.worker.start"}, func(bin []byte) {
 		worker := newWorker(w)
-
+		go worker.run()
 	})
 }
