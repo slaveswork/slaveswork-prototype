@@ -44,7 +44,7 @@ const receiveMessage = (event, callback) => {
 
     websocket.addEventListener('message', function (message) {
         const json = JSON.parse(message.data);
-        if (json.event.event === event) {
+        if (json.event === event) {
             callback(json.body);
         }
     });
