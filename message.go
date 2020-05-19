@@ -13,7 +13,7 @@ func (g GotronMessage) EventString() string {
 
 type GotronMessage struct {
 	*gotron.Event // is event name.
-	Body  interface{} `json:"body"` // is actual content.
+	Body interface{} `json:"body"` // is actual content.
 }
 
 // Host's message sender : send message to window.
@@ -39,7 +39,7 @@ func (h *Host) send(e string) {
 }
 
 // Pretty printing JSON message.
-func checkJSON(message GotronMessage) {
+func checkJSON(message interface{}) {
 	prettyJson, err := json.MarshalIndent(message, "", "    ")
 	if err != nil {
 		log.Fatal("Failed to generate JSON", err)
