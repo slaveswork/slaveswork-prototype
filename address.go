@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/url"
 	"strconv"
 )
 
@@ -17,7 +18,7 @@ func newAddress() (Address, net.Listener) {
 	addr := Address{}                        // application address(IP + Port)
 	listener, err := net.Listen("tcp", ":0") // for finding unused Port number.
 	if err != nil {
-		log.Fatal("func : newAddress\nError : ", err)
+		log.Fatal("func : newAddress\n", err)
 	}
 
 	addr.IP = getIP()                                             // get IP address
@@ -30,7 +31,7 @@ func newAddress() (Address, net.Listener) {
 func getIP() string {
 	addresses, err := net.InterfaceAddrs()
 	if err != nil {
-		log.Fatal("func : getIP\nError : ", err)
+		log.Fatal("func : getIP\n", err)
 	}
 
 	var ip string // return value
@@ -59,4 +60,15 @@ func (a *Address) generateToken() string {
 
 	// SHA1 hash value is too long to be used by users.
 	return token[:12] // return only 12 characters(string).
+}
+
+func (a *Address) generateHostAddress(path string) (hostAddress string) {
+	u := url.URL{
+		Scheme: "http",
+		Host:   a.IP + ":" + a.Port,
+		Path:   path,
+	}
+
+	hostAddress = u.String()
+	return
 }
