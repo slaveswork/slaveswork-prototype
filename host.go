@@ -73,6 +73,7 @@ func (h *Host) gotronMessageHandler() {
 
 func (h *Host) httpMessageHandler(listenser net.Listener) {
 	http.HandleFunc("/"+h.token, h.sendConnectionResponse)
+	http.HandleFunc("/status", h.receiveWorkerStatus)
 
 	http.Serve(listenser, nil)
 }
@@ -99,4 +100,14 @@ func (h *Host) sendConnectionResponse(w http.ResponseWriter, r *http.Request) {
 	// set response Header and send to worker
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(respBody)
+}
+
+func (h *Host) receiveWorkerStatus(w http.ResponseWriter, r *http.Request) {
+	var worker Worker
+	if err := json.NewDecoder(r.Body).Decode(&worker); err != nil {
+		log.Fatal("func : receiveWorkerStatus\n", err)
+	}
+
+	checkJSON(&worker)
+	h.workers[worker.Id] = &worker
 }

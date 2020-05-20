@@ -3,14 +3,18 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/Equanox/gotron"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 type Worker struct {
 	window      *gotron.BrowserWindow `json:"-"` // to ignore in marshaling
 	hostAddress Address               `json:"-"` // to ignore in marshaling
+	ci          chan int              `json:"-"`
 
 	Id      int     `json:"id"`
 	Address Address `json:"address"`
@@ -19,12 +23,14 @@ type Worker struct {
 func newWorker(w *gotron.BrowserWindow) *Worker {
 	return &Worker{
 		window: w, // for worker's window.
+		ci:     make(chan int),
 	}
 }
 
 func (w *Worker) run() {
 	w.init()
 	w.gotronMessageHandler()
+	w.sendWorkerStatus()
 }
 
 func (w *Worker) init() {
@@ -73,4 +79,28 @@ func (w *Worker) sendConnectionRequest(bin []byte) {
 	}
 
 	w.Id = respId.Id // set up worker's Id for host's management.
+	w.ci <- respId.Id
+}
+
+func (w *Worker) sendWorkerStatus() {
+	<-w.ci      // wait function until setting worker's Id.
+	close(w.ci) // close channel... we don't need that anymore.
+
+	url := w.hostAddress.generateHostAddress("status") // Host address.
+
+	for range time.Tick(time.Second * 5) { // repeat sending this worker's status every 5 seconds.
+		requestBody, err := json.MarshalIndent(w, "", "    ")
+		if err != nil {
+			log.Fatal("func : sendWorkerStatus\n", err)
+		}
+
+		resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
+		if err != nil {
+			log.Fatal("func : sendWorkerStatus\n", err)
+		}
+
+		respBytes, _ := ioutil.ReadAll(resp.Body) // read response from host.
+		fmt.Println(string(respBytes)) // printing for validation.
+		resp.Body.Close() // close response body.
+	}
 }
