@@ -9,8 +9,8 @@ import (
 )
 
 type Worker struct {
-	window      *gotron.BrowserWindow `json:"-"`
-	hostAddress Address               `json:"-"`
+	window      *gotron.BrowserWindow `json:"-"` // to ignore in marshaling
+	hostAddress Address               `json:"-"` // to ignore in marshaling
 
 	Id      int     `json:"id"`
 	Address Address `json:"address"`
@@ -18,7 +18,7 @@ type Worker struct {
 
 func newWorker(w *gotron.BrowserWindow) *Worker {
 	return &Worker{
-		window: w,
+		window: w, // for worker's window.
 	}
 }
 
@@ -28,7 +28,7 @@ func (w *Worker) run() {
 }
 
 func (w *Worker) init() {
-	w.Address, _ = newAddress()
+	w.Address, _ = newAddress() // initialize worker's address.
 }
 
 func (w *Worker) gotronMessageHandler() {
@@ -65,12 +65,12 @@ func (w *Worker) sendConnectionRequest(bin []byte) {
 	// resp's body will have this worker's Id(for Host's worker management).
 	defer resp.Body.Close()
 
-	respId := struct {
+	respId := struct { // temporary struct for receiving response body.
 		Id int `json:"id"`
 	}{}
 	if err := json.NewDecoder(resp.Body).Decode(&respId); err != nil {
 		log.Fatal("func : sendConnectionRequest\n", err)
 	}
 
-	w.Id = respId.Id
+	w.Id = respId.Id // set up worker's Id for host's management.
 }
