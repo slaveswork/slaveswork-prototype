@@ -41,7 +41,7 @@ func (h *Host) init() (listener net.Listener) {
 	// 'h.address' is already created by 'newHost' function
 	h.address, listener = newAddress() // initialize Host's IP address and Port number.
 	// send network status to 'Host' window.
-	h.send("window.network.status")
+	h.send("window.network.status", nil)
 	h.token = h.address.generateToken() // generate Token for Worker's connection.
 
 	go h.handleWorkers() // register & unregister Worker.
@@ -51,7 +51,7 @@ func (h *Host) init() (listener net.Listener) {
 
 // this function manage workers for host.
 func (h *Host) handleWorkers() {
-	i := 0 // indexing workers
+	i := 1 // indexing workers
 
 	for {
 		select {
@@ -68,33 +68,38 @@ func (h *Host) handleWorkers() {
 }
 
 func (h *Host) gotronMessageHandler() {
-	h.window.On(&gotron.Event{Event: "app.generate.token"}, func(bin []byte) { h.send("window.send.token") })
+	h.window.On(&gotron.Event{Event: "app.generate.token"}, func(bin []byte) { h.send("window.send.token", nil) })
 }
 
 func (h *Host) httpMessageHandler(listenser net.Listener) {
-	http.HandleFunc("/"+h.token, h.sendConnectionResponse)
+	http.HandleFunc("/"+h.token, h.receiveConnectionRequest)
 	http.HandleFunc("/status", h.receiveWorkerStatus)
 
 	http.Serve(listenser, nil)
 }
 
-func (h *Host) sendConnectionResponse(w http.ResponseWriter, r *http.Request) {
+func (h *Host) receiveConnectionRequest(w http.ResponseWriter, r *http.Request) {
 	var worker Worker // for unmarshal request
 	if err := json.NewDecoder(r.Body).Decode(&worker); err != nil {
-		log.Fatal("func : sendConnectionResponse\n", err)
+		log.Fatal("func : receiveConnectionRequest\n", err)
 	}
 
 	h.register <- &worker // register worker for management
+
 	respId := struct { // make struct for response
 		Id int `json:"id"`
 	}{
 		Id: <-h.index,
 	}
 
+	(&worker).Id = respId.Id
+	// Add worker status at host's window. ( Method : "Add" )
+	h.send("window.device.status", &worker)
+
 	// make response body for ResponseWriter
 	respBody, err := json.MarshalIndent(respId, "", "    ")
 	if err != nil {
-		log.Fatal("func : sendConnectionResponse\n", err)
+		log.Fatal("func : receiveConnectionRequest\n", err)
 	}
 
 	// set response Header and send to worker
@@ -108,6 +113,8 @@ func (h *Host) receiveWorkerStatus(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("func : receiveWorkerStatus\n", err)
 	}
 
-	checkJSON(&worker)
 	h.workers[worker.Id] = &worker
+
+	// Update worker status at host's window. ( Method : "Update" )
+	h.send("window.device.status", &worker)
 }

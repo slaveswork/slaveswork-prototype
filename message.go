@@ -17,7 +17,7 @@ type GotronMessage struct {
 }
 
 // Host's message sender : send message to window.
-func (h *Host) send(e string) {
+func (h *Host) send(e string, b interface{}) {
 	message := GotronMessage{
 		Event: &gotron.Event{Event: e},
 	}
@@ -31,6 +31,18 @@ func (h *Host) send(e string) {
 			Token string `json:"token"`
 		}{
 			Token: h.token, // initialize value.
+		}
+	case "window.device.status":
+		message.Body = struct {
+			Id     int `json:"id"`
+			Name   string `json:"name"`
+			Method string `json:"method"`
+			CPU    float64 `json:"cpu"`
+			Memory float64 `json:"memory"`
+		}{
+			Id:     b.(*Worker).Id,
+			Name:   b.(*Worker).Name,
+			Method: b.(*Worker).Method,
 		}
 	}
 

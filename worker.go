@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -17,6 +18,8 @@ type Worker struct {
 	ci          chan int              `json:"-"`
 
 	Id      int     `json:"id"`
+	Name    string  `json:"name"`
+	Method  string  `json:"method"`
 	Address Address `json:"address"`
 }
 
@@ -34,6 +37,7 @@ func (w *Worker) run() {
 }
 
 func (w *Worker) init() {
+	w.Name, _ = os.Hostname()
 	w.Address, _ = newAddress() // initialize worker's address.
 }
 
@@ -54,6 +58,7 @@ func (w *Worker) sendConnectionRequest(bin []byte) {
 		log.Fatal("func : sendConnectionRequest\n", err)
 	}
 	w.hostAddress = body.Address // Initialize host address.
+	w.Method = "add" // first send "add" worker to host.
 
 	// Marshaling body for connection request.
 	requestBody, err := json.MarshalIndent(w, "", "    ")
@@ -87,6 +92,7 @@ func (w *Worker) sendWorkerStatus() {
 	close(w.ci) // close channel... we don't need that anymore.
 
 	url := w.hostAddress.generateHostAddress("status") // Host address.
+	w.Method = "update" // from now on, send "update" method to host.
 
 	for range time.Tick(time.Second * 5) { // repeat sending this worker's status every 5 seconds.
 		requestBody, err := json.MarshalIndent(w, "", "    ")
