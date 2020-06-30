@@ -1,7 +1,10 @@
 .DS_Store
 go.mod
 go.sum
+
 .gotron/
 ui/dist/
 ui/node_modules/
-ui/package-lock.json
+**/package-lock.json
+
+.idea/
