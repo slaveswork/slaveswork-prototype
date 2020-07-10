@@ -71,16 +71,16 @@ func (h *Host) gotronMessageHandler() {
 	h.window.On(&gotron.Event{Event: "app.generate.token"}, func(bin []byte) { h.send("window.send.token", nil) })
 }
 
-func (h *Host) httpMessageHandler(listenser net.Listener) {
-	// handlers for application
+func (h *Host) httpMessageHandler(listener net.Listener) {
 	http.HandleFunc("/"+h.token, h.receiveConnectionRequest)
 	http.HandleFunc("/status", h.receiveWorkerStatus)
+	http.HandleFunc("/task/tiles", h.receiveTilesInfo)
 
 	// handlers for blender
 	http.HandleFunc("/running/check", h.receiveRunningCheck)
 	http.HandleFunc("/task/resource", ReceiveTaskResource)
 
-	http.Serve(listenser, nil)
+	http.Serve(listener, nil)
 }
 
 func (h *Host) receiveConnectionRequest(w http.ResponseWriter, r *http.Request) {
@@ -128,4 +128,15 @@ func (h *Host) receiveRunningCheck(w http.ResponseWriter, r *http.Request) {
 	log.Fatal("Blender Add-On : checking host running...")
 	w.WriteHeader(http.StatusOK) // return status code 200
 	// return 404 when host is not running
+}
+
+func (h *Host) receiveTilesInfo(w http.ResponseWriter, r *http.Request) {
+	var tiles []Tile
+	if err :=  json.NewDecoder(r.Body).Decode(&tiles); err != nil{
+		log.Fatal("{error}, tiles unmarshall error ")
+	}
+
+	for _, tile := range tiles {
+		tile.prettyPrint()
+	}
 }
