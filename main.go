@@ -1,8 +1,6 @@
 package main
 
-import (
-	"github.com/Equanox/gotron"
-)
+import "github.com/Equanox/gotron"
 
 func main() {
 	// Create a new browser window instance
@@ -19,7 +17,8 @@ func main() {
 	// Open dev tools must be used after window.Start
 	window.OpenDevTools()
 
-	processEvent(window)
+	// Run application(app)
+	runApp(window)
 
 	// Wait for the application to close
 	<- done
@@ -39,7 +38,7 @@ func app() *gotron.BrowserWindow {
 	return window
 }
 
-func processEvent(w *gotron.BrowserWindow) {
+func runApp(w *gotron.BrowserWindow) {
 	w.On(&gotron.Event{Event: "app.host.start"}, func(bin []byte) {
 		host := newHost(w)
 		go host.run()
