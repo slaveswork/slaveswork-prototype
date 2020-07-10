@@ -71,11 +71,12 @@ func (h *Host) gotronMessageHandler() {
 	h.window.On(&gotron.Event{Event: "app.generate.token"}, func(bin []byte) { h.send("window.send.token", nil) })
 }
 
-func (h *Host) httpMessageHandler(listenser net.Listener) {
+func (h *Host) httpMessageHandler(listener net.Listener) {
 	http.HandleFunc("/"+h.token, h.receiveConnectionRequest)
 	http.HandleFunc("/status", h.receiveWorkerStatus)
+	http.HandleFunc("/task/tiles", h.receiveTilesInfo)
 
-	http.Serve(listenser, nil)
+	http.Serve(listener, nil)
 }
 
 func (h *Host) receiveConnectionRequest(w http.ResponseWriter, r *http.Request) {
@@ -117,4 +118,15 @@ func (h *Host) receiveWorkerStatus(w http.ResponseWriter, r *http.Request) {
 
 	// Update worker status at host's window. ( Method : "Update" )
 	h.send("window.device.status", &worker)
+}
+
+func (h *Host) receiveTilesInfo(w http.ResponseWriter, r *http.Request) {
+	var tiles []Tile
+	if err :=  json.NewDecoder(r.Body).Decode(&tiles); err != nil{
+		log.Fatal("{error}, tiles unmarshall error ")
+	}
+
+	for _, tile := range tiles {
+		tile.prettyPrint()
+	}
 }
