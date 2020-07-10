@@ -34,7 +34,7 @@ func newHost(w *gotron.BrowserWindow) *Host {
 func (h *Host) run() {
 	listener := h.init()
 	h.gotronMessageHandler()
-	h.httpMessageHandler(listener)
+	go h.httpMessageHandler(listener)
 }
 
 func (h *Host) init() (listener net.Listener) {
@@ -72,8 +72,13 @@ func (h *Host) gotronMessageHandler() {
 }
 
 func (h *Host) httpMessageHandler(listenser net.Listener) {
+	// handlers for application
 	http.HandleFunc("/"+h.token, h.receiveConnectionRequest)
 	http.HandleFunc("/status", h.receiveWorkerStatus)
+
+	// handlers for blender
+	http.HandleFunc("/running/check", h.receiveRunningCheck)
+	http.HandleFunc("/task/resource", ReceiveTaskResource)
 
 	http.Serve(listenser, nil)
 }
@@ -117,4 +122,10 @@ func (h *Host) receiveWorkerStatus(w http.ResponseWriter, r *http.Request) {
 
 	// Update worker status at host's window. ( Method : "Update" )
 	h.send("window.device.status", &worker)
+}
+
+func (h *Host) receiveRunningCheck(w http.ResponseWriter, r *http.Request) {
+	log.Fatal("Blender Add-On : checking host running...")
+	w.WriteHeader(http.StatusOK) // return status code 200
+	// return 404 when host is not running
 }
