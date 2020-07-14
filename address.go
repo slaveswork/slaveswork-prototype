@@ -59,7 +59,7 @@ func (a *Address) generateToken() string {
 	token := fmt.Sprintf("%x", bs) // byte slice to string
 
 	// SHA1 hash value is too long to be used by users.
-	return token[:12] // return only 12 characters(string).
+	return token[:3] // return only 12 characters(string).
 }
 
 func (a *Address) generateHostAddress(path string) (hostAddress string) {
