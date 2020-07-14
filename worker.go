@@ -1,14 +1,18 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/Equanox/gotron"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
+	"strconv"
 	"time"
 )
 
@@ -21,12 +25,20 @@ type Worker struct {
 	Name    string  `json:"name"`
 	Method  string  `json:"method"`
 	Address Address `json:"address"`
+
+	// Worker status -> ignore
+	Status      string      `json:"-"`
+	T           chan Tile   `json:"-"`
+	FilePath    chan string `json:"-"`
+	BlenderPath string `json:"-"`
 }
 
 func newWorker(w *gotron.BrowserWindow) *Worker {
 	return &Worker{
 		window: w, // for worker's window.
 		ci:     make(chan int),
+		T:           make(chan Tile),
+		FilePath:    make(chan string),
 	}
 }
 
@@ -34,6 +46,8 @@ func (w *Worker) run() {
 	w.init()
 	w.gotronMessageHandler()
 	w.sendWorkerStatus()
+	go w.httpMessageHandler()
+	go w.renderTileWithBlender()
 }
 
 func (w *Worker) init() {
@@ -43,6 +57,13 @@ func (w *Worker) init() {
 
 func (w *Worker) gotronMessageHandler() {
 	w.window.On(&gotron.Event{Event: "app.connect.device"}, w.sendConnectionRequest) // connection between worker and host.
+	w.window.On(&gotron.Event{Event: "window.blender.path"}, w.receiveBlenderPath) // blender.exe path
+}
+
+func (w *Worker) httpMessageHandler() {
+	http.HandleFunc("/render/resource", w.receiveRenderResource)
+
+	http.ListenAndServe(":" + w.Address.Port, nil)
 }
 
 func (w *Worker) sendConnectionRequest(bin []byte) {
@@ -108,5 +129,104 @@ func (w *Worker) sendWorkerStatus() {
 		respBytes, _ := ioutil.ReadAll(resp.Body) // read response from host.
 		fmt.Println(string(respBytes)) // printing for validation.
 		resp.Body.Close() // close response body.
+	}
+}
+
+func (w *Worker) receiveBlenderPath(bin []byte) {
+	var message GotronMessage
+	body := struct {
+		blenderPath string `json:"blenderPath"`
+	}{}
+	message.Body = &body
+
+	if err := json.Unmarshal(bin, &message); err != nil {
+		log.Fatal("func : receiveBlenderPath\n", err)
+	}
+
+	w.BlenderPath = body.blenderPath
+}
+
+func (w *Worker) receiveRenderResource(rw http.ResponseWriter, r *http.Request) {
+	index, err := strconv.Atoi(r.Header.Get("index"))
+	xmin, err := strconv.Atoi(r.Header.Get("xmin"))
+	ymin, err := strconv.Atoi(r.Header.Get("ymin"))
+	xmax, err := strconv.Atoi(r.Header.Get("xmax"))
+	ymax, err := strconv.Atoi(r.Header.Get("ymax"))
+	fram, err := strconv.Atoi(r.Header.Get("fram"))
+	if err != nil {
+		log.Fatal("func : receiveRenderResource\n", err)
+	}
+
+	t := Tile {
+		Index: index,
+		Xmin: xmin,
+		Ymin: ymin,
+		Xmax: xmax,
+		Ymax: ymax,
+		Frame: fram,
+	}
+
+	w.T <- t
+
+	file, header, err := r.FormFile("blend-file")
+	if err != nil {
+		log.Fatal("func : receiveRenderResource\n", err)
+	}
+
+	defer file.Close()
+
+	path := os.TempDir() + "/" + header.Filename
+	out, err := os.Create(path)
+	if err != nil {
+		log.Fatal(rw, "Unable to create the file for writing.")
+		return
+	}
+
+	defer out.Close()
+
+	_, err = io.Copy(out, file)
+	if err != nil {
+		log.Fatal(rw, err)
+	}
+
+	w.FilePath <- path
+}
+
+func (w *Worker) renderTileWithBlender() {
+	var blendFile string
+	var tile Tile
+
+	for {
+		blendFile = <- w.FilePath // *.blend file path
+		tile = <- w.T
+
+		pythonFile := tile.makePythonFile() // python file with tile information
+		cmd := exec.Command(w.BlenderPath,
+			"--background", blendFile,
+			"-F", "EXR",
+			"--render-output", os.TempDir() + "/output.blend", // should be have #(index)
+			"-Y",
+			"-noaudio",
+			"-E", "CYCLES",
+			"-P", pythonFile,
+			"--render-frame", strconv.Itoa(tile.Frame))
+
+		stdout, err := cmd.StdoutPipe()
+		stderr, err := cmd.StderrPipe()
+		err = cmd.Start()
+		if err != nil {
+			log.Fatal("func : renderTileWithBlender\n", err)
+		}
+
+		go copyOutput(stdout)
+		go copyOutput(stderr)
+		cmd.Wait()
+	}
+}
+
+func copyOutput(r io.Reader) {
+	sc := bufio.NewScanner(r)
+	for sc.Scan() {
+		fmt.Println(sc.Text())
 	}
 }

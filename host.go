@@ -18,6 +18,9 @@ type Host struct {
 	index      chan int
 	register   chan *Worker
 	unregister chan int
+
+	filePath   chan string
+	tiles      []Tile
 }
 
 func newHost(w *gotron.BrowserWindow) *Host {
@@ -26,6 +29,7 @@ func newHost(w *gotron.BrowserWindow) *Host {
 
 		workers:    make(map[int]*Worker),
 		index:      make(chan int),
+		filePath:   make(chan string),
 		register:   make(chan *Worker),
 		unregister: make(chan int),
 	}
@@ -78,7 +82,7 @@ func (h *Host) httpMessageHandler(listener net.Listener) {
 
 	// handlers for blender
 	http.HandleFunc("/running/check", h.receiveRunningCheck)
-	http.HandleFunc("/task/resource", ReceiveTaskResource)
+	http.HandleFunc("/task/resource", h.ReceiveTaskResource)
 
 	http.Serve(listener, nil)
 }
@@ -137,6 +141,9 @@ func (h *Host) receiveTilesInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, tile := range tiles {
-		tile.prettyPrint()
+		tile.prettyPrint() // printing tiles information
 	}
+
+	h.tiles = tiles
+	h.DoRender() // tiles : tile information, path : blender file path
 }
