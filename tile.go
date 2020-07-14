@@ -23,7 +23,7 @@ type Tile struct {
 }
 
 func (t *Tile) prettyPrint() {
-	fmt.Printf("Tile: { \"index\" : %d, \"xmin\" : %d, \"ymin\" : %d, \"xmax\" : %d, \"ymax\" : %d, \"frame\" : %d}\n", t.Index, t.Xmin, t.Ymin, t.Xmax, t.Ymax, t.Frame)
+	fmt.Printf("Tile: { \"index\" : %s, \"xmin\" : %s, \"ymin\" : %s, \"xmax\" : %s, \"ymax\" : %s, \"frame\" : %s}\n", t.Index, t.Xmin, t.Ymin, t.Xmax, t.Ymax, t.Frame)
 }
 
 func (t *Tile) Dispatch(h *Host, path string) {
@@ -36,7 +36,8 @@ func (t *Tile) Dispatch(h *Host, path string) {
 				defer w.Close()
 				defer m.Close()
 
-				part, err := m.CreateFormFile("blend-file", path)
+				part, err := m.CreateFormFile("blend-file", "main.blend")
+
 				if err != nil {
 					log.Fatal("func : Dispatch\n", err)
 				}
@@ -70,6 +71,8 @@ func (t *Tile) Dispatch(h *Host, path string) {
 			if err != nil {
 				log.Fatal("func : Dispatch\n", err)
 			}
+
+			fmt.Println("worker ", worker.Id, " dispatch Status : ",resp.Status)
 
 			resp.Body.Close()
 			worker.Status = "running"
