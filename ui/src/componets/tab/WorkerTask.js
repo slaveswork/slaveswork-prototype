@@ -1,5 +1,5 @@
 import React from 'react';
-import Blender from './sub_tab/Blender';
+import WorkerBlender from './sub_tab/WorkerBlender';
 import Developing from './sub_tab/Developing';
 import SubTabMenuBar from './sub_tab_menu_bar/SubTabMenuBar'
 
@@ -12,15 +12,15 @@ const subMenu = [
     }
 ]
 
-const WorkerTask = () => {
+const Task = () => {
     return (
         <div className="tab">
             <SubTabMenuBar subMenu={subMenu}>
-                <Blender />
+                <WorkerBlender />
                 <Developing />
             </SubTabMenuBar>
         </div>
     );
 }
 
-export default WorkerTask;
+export default Task;

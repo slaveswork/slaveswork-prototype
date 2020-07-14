@@ -88,7 +88,7 @@
     overflow: auto;
     height: calc(100% - 42px);
     font-size: 24px;
-    font-family: 'Noto Sans KR thin', sans-serif;
+    font-family: 'Noto Sans KR', sans-serif;
 }
 
 #tab_device_list table tbody::-webkit-scrollbar
