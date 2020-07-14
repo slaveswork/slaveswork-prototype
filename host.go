@@ -18,6 +18,9 @@ type Host struct {
 	index      chan int
 	register   chan *Worker
 	unregister chan int
+
+	filePath   chan string
+	tiles      []Tile
 }
 
 func newHost(w *gotron.BrowserWindow) *Host {
@@ -26,6 +29,7 @@ func newHost(w *gotron.BrowserWindow) *Host {
 
 		workers:    make(map[int]*Worker),
 		index:      make(chan int),
+		filePath:   make(chan string),
 		register:   make(chan *Worker),
 		unregister: make(chan int),
 	}
@@ -34,7 +38,7 @@ func newHost(w *gotron.BrowserWindow) *Host {
 func (h *Host) run() {
 	listener := h.init()
 	h.gotronMessageHandler()
-	h.httpMessageHandler(listener)
+	go h.httpMessageHandler(listener)
 }
 
 func (h *Host) init() (listener net.Listener) {
@@ -75,6 +79,10 @@ func (h *Host) httpMessageHandler(listener net.Listener) {
 	http.HandleFunc("/"+h.token, h.receiveConnectionRequest)
 	http.HandleFunc("/status", h.receiveWorkerStatus)
 	http.HandleFunc("/task/tiles", h.receiveTilesInfo)
+
+	// handlers for blender
+	http.HandleFunc("/running/check", h.receiveRunningCheck)
+	http.HandleFunc("/task/resource", h.ReceiveTaskResource)
 
 	http.Serve(listener, nil)
 }
@@ -120,6 +128,12 @@ func (h *Host) receiveWorkerStatus(w http.ResponseWriter, r *http.Request) {
 	h.send("window.device.status", &worker)
 }
 
+func (h *Host) receiveRunningCheck(w http.ResponseWriter, r *http.Request) {
+	log.Fatal("Blender Add-On : checking host running...")
+	w.WriteHeader(http.StatusOK) // return status code 200
+	// return 404 when host is not running
+}
+
 func (h *Host) receiveTilesInfo(w http.ResponseWriter, r *http.Request) {
 	var tiles []Tile
 	if err :=  json.NewDecoder(r.Body).Decode(&tiles); err != nil{
@@ -127,6 +141,9 @@ func (h *Host) receiveTilesInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, tile := range tiles {
-		tile.prettyPrint()
+		tile.prettyPrint() // printing tiles information
 	}
+
+	h.tiles = tiles
+	h.DoRender() // tiles : tile information, path : blender file path
 }
