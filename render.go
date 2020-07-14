@@ -2,11 +2,13 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
+	"path/filepath"
 	"strings"
 )
 
@@ -20,25 +22,27 @@ func (h *Host) ReceiveTaskResource(w http.ResponseWriter, r *http.Request) {
 
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
 
-	if blen := string(reqBody[:1]); strings.Compare(blen, "blen") != 0 {
+	fmt.Print("blen : ", string(reqBody[0:4]))
+	if blen := string(reqBody[:4]); strings.Compare(blen, "blen") != 0 {
 		log.Fatal("func : ReceiveTaskResource\n", "This is not a task resource request.")
 	}
-
-	fileSize, err := strconv.Atoi(string(reqBody[1:2]))
+	buffer := bytes.NewBuffer(reqBody[4:8])
+	fileSize, err := binary.ReadVarint(buffer)
+	fmt.Print("size : ", fileSize)
 	if err != nil {
 		log.Fatal("func : ReceiveTaskResource\n", "This is not a number.")
 	}
 
-	if fileSize != len(reqBody[2:]) {
-		log.Fatal("func : ReceiveTaskResource\n", "An error occurred while receiving the file.")
-	}
+	//if fileSize != len(reqBody[8:]) {
+	//	log.Fatal("func : ReceiveTaskResource\n", "An error occurred while receiving the file.")
+	//}
 
-	dir := os.TempDir() + "/main.blend"
-	err = ioutil.WriteFile(dir, reqBody[2:], 0644)
+	dir := filepath.Join(os.TempDir(), "main.blend")
+	err = ioutil.WriteFile(dir, reqBody[8:], 0644)
 	if err != nil {
 		log.Fatal("func : ReceiveTaskResource\n", "File Writing Error.")
 	}
-
+	fmt.Print("dir:", dir)
 	h.filePath <- dir
 }
 
