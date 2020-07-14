@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import TabMenuBar from '../../componets/tab_menu_bar/TabMenuBar';
 import WorkerHome from '../../componets/tab/WorkerHome';
 import WorkerTask from '../../componets/tab/WorkerTask';
@@ -8,30 +8,20 @@ import './Worker.css'
 import { connect } from 'react-redux';
 import { setBlender } from '../../service/store';
 
-const menu = [
+const menuArray = [
     {
         title: 'Home',
-        url: 'fas fa-house-user',
-        disabled: false
+        url: 'fas fa-house-user'
     },
     {
         title: 'Task',
-        url: 'fas fa-clipboard-list',
-        disabled: true
+        url: 'fas fa-clipboard-list'
     },
     {
         title: 'Status',
-        url: 'fas fa-cog',
-        disabled: false 
+        url: 'fas fa-cog'
     }
 ];
-
-const menuOnClick = (menu, index, setSelected) => {
-    if (!menu.disabled) {
-        console.log(menu)
-        setSelected(index)
-    }
-}
 
 const onMessageBlenderPath = (setBlender) => {
     receiveMessage(Events.windowBlenderPath, (message) => {
@@ -41,9 +31,6 @@ const onMessageBlenderPath = (setBlender) => {
 
 const Worker = ({setBlender}) => {
     sendMessage(Events.appWorkerStart);
-    const [menuArray, setMenuArray] = useState(menu);
-    const [selected, setSelected] = useState(0);
-    onMessageBlenderPath(setBlender)
 
     return (
         <div id="wrapper">
@@ -52,9 +39,9 @@ const Worker = ({setBlender}) => {
                     <h3>Slave's work</h3>
                 </div>
             </div>
-            <TabMenuBar menu={menuArray} selected={selected} setSelected={setSelected} menuOnClick={menuOnClick} className="host_wrapper_bottom">
-                <WorkerHome {...menuArray} selected={selected} setSelected={setSelected} menuOnClick={menuOnClick}>WorkerHome</WorkerHome>
-                <WorkerTask {...menuArray[1]}>Status</WorkerTask>
+            <TabMenuBar menu={menuArray} className="host_wrapper_bottom">
+                <WorkerHome {...menuArray[0]}>WorkerHome</WorkerHome>
+                <WorkerTask {...menuArray[1]}>WorkerTask</WorkerTask>
                 <Status {...menuArray[2]}>Status</Status>
             </TabMenuBar>
         </div>

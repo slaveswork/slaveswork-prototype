@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import classNames from 'classnames';
+
 import './TabMenuBar.css'
 
 const TabMenuBar = (props) => {
-    const menuArray = props.menu
-    const menuOnClick = props.menuOnClick
-    const selected = props.selected
-    const setSelected = props.setSelected
+    const [menuArray, setMenuArray] = useState(props.menu);
+    const [selected, setSelected] = useState(0);
 
     return (
         <div id="tab_menu">
@@ -15,9 +13,9 @@ const TabMenuBar = (props) => {
                     {menuArray.map((menu, index) => {
                         return (
                             <li
-                                className={classNames({ 'focus': !menu.disabled && index == selected }, { 'unfocus': !menu.disabled && index != selected }, { "disabled": menu.disabled })}
+                                className={index == selected ? 'focus' : 'unfocus'}
                                 key={menu.title}
-                                onClick={() => menuOnClick(menu, index, setSelected)}>
+                                onClick={() => setSelected(index)}>
                                 {index == selected ?
                                     <i className={menu.url} aria-hidden="true" /> :
                                     <i className={menu.url + " gray"} aria-hidden="true" />}
