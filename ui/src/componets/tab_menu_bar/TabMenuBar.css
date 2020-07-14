@@ -75,6 +75,13 @@
     background-color: #FF008C;
 }
 
+#tab_menu_bar ul .disabled:hover{
+    cursor: default;
+}
+
+#tab_menu_bar ul .disabled:hover::before{
+}
+
 #tab_menu_bar ul li a{
     display: flex;
     font-size: 15px;

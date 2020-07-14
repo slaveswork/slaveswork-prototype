@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Events, sendMessage } from '../../service/Message';
 import './WorkerHome.css';
 
-const connect = (ipText, portText, tokenText) => {
+const connect = (ipText, portText, tokenText, callback) => {
     // todo : token vaildation
     sendMessage(Events.appConnectDevice,
         {
@@ -10,9 +10,16 @@ const connect = (ipText, portText, tokenText) => {
             port: portText.current.value,
             token: tokenText.current.value
         });
+
+    callback();
 }
 
-const WorkerHome = () => {
+const rediract = (props) => {
+    props[1].disabled = false;
+    props.menuOnClick(props[1], 1, props.setSelected)
+}
+
+const WorkerHome = (props) => {
     const ipText = useRef(null);
     const portText = useRef(null);
     const tokenText = useRef(null);
@@ -32,7 +39,7 @@ const WorkerHome = () => {
                 <div className="underline" id="token_underline"></div>
                 <label htmlFor="input_token">Input Token</label>
             </div>
-            <button id="connect_btn" onClick={() => connect(ipText, portText, tokenText)}>Connect</button>
+            <button id="connect_btn" onClick={() => connect(ipText, portText, tokenText, () => rediract(props))}>Connect</button>
         </div>
     );
 }

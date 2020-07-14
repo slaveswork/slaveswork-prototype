@@ -3,10 +3,12 @@ const Events = {
     appWorkerStart      : "app.worker.start",
     appGenerateToken    : "app.generate.token",
     appConnectDevice    : "app.connect.device",
+    appBlenderPath      : "app.blender.path",
     windowDeviceStatus  : "window.device.status",
     windowNetworkStatus : "window.network.status",
     windowTaskProgress  : "window.task.progress",
-    windowSendToken     : "window.send.token"
+    windowSendToken     : "window.send.token",
+    windowBlenderPath   : "window.blender.Path"
 };
 
 let websocket = undefined;

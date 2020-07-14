@@ -34,7 +34,7 @@ const devices = createSlice({
         },
         updateDevice: (state, action) => {
             state.forEach(device => {
-                if (device.id === action.payload.device.id){
+                if (device.id === action.payload.device.id) {
                     device.cpu = action.payload.device.cpu;
                     device.memory = action.payload.device.memory;
                 }
@@ -52,9 +52,26 @@ export const {
     removeDevice
 } = devices.actions;
 
+const blender = createSlice({
+    name: 'blenderPath',
+    initialState: "",
+    reducers: {
+        setBlender: (state, action) => {
+            state = action.payload;
+            return state
+        }
+    }
+})
+
+export const {
+    setBlender
+} = blender.actions;
+
+
 const reducer = combineReducers({
     info: info.reducer,
-    devices: devices.reducer
+    devices: devices.reducer,
+    blender: blender.reducer
 })
 
 export default configureStore({ reducer });
