@@ -7,16 +7,15 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"strconv"
 )
 
 type Tile struct {
-	Index int `json:"index"`
-	Xmin  int `json:"xmin"`
-	Ymin  int `json:"ymin"`
-	Xmax  int `json:"xmax"`
-	Ymax  int `json:"ymax"`
-	Frame int `json:"fram"`
+	Index string `json:"index"`
+	Xmin  string `json:"xmin"`
+	Ymin  string `json:"ymin"`
+	Xmax  string `json:"xmax"`
+	Ymax  string `json:"ymax"`
+	Frame string `json:"fram"`
 
 	// In JSON parsing, the following parameters are ignored.
 	Active  bool `json:"-"`
@@ -59,12 +58,12 @@ func (t *Tile) Dispatch(h *Host, path string) {
 			}
 
 			req.Header.Add("Content-Type", m.FormDataContentType())
-			req.Header.Add("index", strconv.Itoa(t.Index))
-			req.Header.Add("xmin", strconv.Itoa(t.Xmin))
-			req.Header.Add("ymin", strconv.Itoa(t.Ymin))
-			req.Header.Add("xmax", strconv.Itoa(t.Xmax))
-			req.Header.Add("ymax", strconv.Itoa(t.Ymax))
-			req.Header.Add("fram", strconv.Itoa(t.Frame))
+			req.Header.Add("index", t.Index)
+			req.Header.Add("xmin", t.Xmin)
+			req.Header.Add("ymin", t.Ymin)
+			req.Header.Add("xmax", t.Xmax)
+			req.Header.Add("ymax", t.Ymax)
+			req.Header.Add("fram", t.Frame)
 
 			client := &http.Client{}
 			resp, err := client.Do(req)
@@ -77,8 +76,4 @@ func (t *Tile) Dispatch(h *Host, path string) {
 			break
 		}
 	}
-}
-
-func (t *Tile) makePythonFile() string {
-
 }

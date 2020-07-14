@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strconv"
 	"time"
 )
 
@@ -147,23 +146,13 @@ func (w *Worker) receiveBlenderPath(bin []byte) {
 }
 
 func (w *Worker) receiveRenderResource(rw http.ResponseWriter, r *http.Request) {
-	index, err := strconv.Atoi(r.Header.Get("index"))
-	xmin, err := strconv.Atoi(r.Header.Get("xmin"))
-	ymin, err := strconv.Atoi(r.Header.Get("ymin"))
-	xmax, err := strconv.Atoi(r.Header.Get("xmax"))
-	ymax, err := strconv.Atoi(r.Header.Get("ymax"))
-	fram, err := strconv.Atoi(r.Header.Get("fram"))
-	if err != nil {
-		log.Fatal("func : receiveRenderResource\n", err)
-	}
-
 	t := Tile {
-		Index: index,
-		Xmin: xmin,
-		Ymin: ymin,
-		Xmax: xmax,
-		Ymax: ymax,
-		Frame: fram,
+		Index: r.Header.Get("index"),
+		Xmin: r.Header.Get("xmin"),
+		Ymin: r.Header.Get("ymin"),
+		Xmax: r.Header.Get("xmax"),
+		Ymax: r.Header.Get("ymax"),
+		Frame: r.Header.Get("fram"),
 	}
 
 	w.T <- t
@@ -200,16 +189,14 @@ func (w *Worker) renderTileWithBlender() {
 		blendFile = <- w.FilePath // *.blend file path
 		tile = <- w.T
 
-		pythonFile := tile.makePythonFile() // python file with tile information
 		cmd := exec.Command(w.BlenderPath,
-			"--background", blendFile,
+			"-b", blendFile,
 			"-F", "EXR",
-			"--render-output", os.TempDir() + "/output.blend", // should be have #(index)
 			"-Y",
 			"-noaudio",
 			"-E", "CYCLES",
-			"-P", pythonFile,
-			"--render-frame", strconv.Itoa(tile.Frame))
+			"-P", "worker.py",
+			"--", tile.Xmin, tile.Ymin, tile.Xmax, tile.Ymax, tile.Frame)
 
 		stdout, err := cmd.StdoutPipe()
 		stderr, err := cmd.StderrPipe()
