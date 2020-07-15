@@ -29,6 +29,7 @@ type Worker struct {
 	Status      string      `json:"-"`
 	T           chan Tile   `json:"-"`
 	FilePath    chan string `json:"-"`
+	Config		Config
 	BlenderPath string `json:"-"`
 }
 
@@ -45,6 +46,8 @@ func (w *Worker) run() {
 	w.init()
 	w.gotronMessageHandler()
 	w.sendWorkerStatus()
+	w.sendBlenderPath()
+	w.sendHostIp()
 	go w.httpMessageHandler()
 	go w.renderTileWithBlender()
 }
@@ -52,11 +55,12 @@ func (w *Worker) run() {
 func (w *Worker) init() {
 	w.Name, _ = os.Hostname()
 	w.Address, _ = newAddress() // initialize worker's address.
+	w.Config = UnmarshalConfig()
 }
 
 func (w *Worker) gotronMessageHandler() {
 	w.window.On(&gotron.Event{Event: "app.connect.device"}, w.sendConnectionRequest) // connection between worker and host.
-	w.window.On(&gotron.Event{Event: "window.blender.path"}, w.receiveBlenderPath) // blender.exe path
+	w.window.On(&gotron.Event{Event: "app.blender.path"}, w.receiveBlenderPath) // blender.exe path
 }
 
 func (w *Worker) httpMessageHandler() {
@@ -79,6 +83,9 @@ func (w *Worker) sendConnectionRequest(bin []byte) {
 	}
 	w.hostAddress = body.Address // Initialize host address.
 	w.Method = "add" // first send "add" worker to host.
+
+	w.Config.HostIp = body.Address.IP
+	w.Config.SaveConfig()
 
 	// Marshaling body for connection request.
 	requestBody, err := json.MarshalIndent(w, "", "    ")
@@ -131,6 +138,34 @@ func (w *Worker) sendWorkerStatus() {
 	}
 }
 
+func (w *Worker) sendBlenderPath() {
+	message := GotronMessage{
+		Event: &gotron.Event{Event: "window.blender.path"},
+	}
+	message.Body = struct { // temporary struct for sending token message.
+		BlenderPath string `json:"blenderPath"`
+	}{
+		BlenderPath: w.Config.BlenderPath, // initialize value.
+	}
+
+	checkJSON(message) // Printing Message for validation.
+	w.window.Send(message)
+}
+
+func (w *Worker) sendHostIp() {
+	message := GotronMessage{
+		Event: &gotron.Event{Event: "window.send.hostIp"},
+	}
+	message.Body = struct { // temporary struct for sending token message.
+		HostIp string `json:"hostIp"`
+	}{
+		HostIp: w.Config.HostIp, // initialize value.
+	}
+
+	checkJSON(message) // Printing Message for validation.
+	w.window.Send(message)
+}
+
 func (w *Worker) receiveBlenderPath(bin []byte) {
 	var message GotronMessage
 	body := struct {
@@ -142,7 +177,8 @@ func (w *Worker) receiveBlenderPath(bin []byte) {
 		log.Fatal("func : receiveBlenderPath\n", err)
 	}
 
-	w.BlenderPath = body.blenderPath
+	w.Config.BlenderPath = body.blenderPath
+	w.Config.SaveConfig()
 }
 
 func (w *Worker) receiveRenderResource(rw http.ResponseWriter, r *http.Request) {
@@ -189,7 +225,7 @@ func (w *Worker) renderTileWithBlender() {
 		blendFile = <- w.FilePath // *.blend file path
 		tile = <- w.T
 
-		cmd := exec.Command(w.BlenderPath,
+		cmd := exec.Command(w.Config.BlenderPath,
 			"-b", blendFile,
 			"-F", "EXR",
 			"-Y",
