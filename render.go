@@ -22,13 +22,13 @@ func (h *Host) ReceiveTaskResource(w http.ResponseWriter, r *http.Request) {
 
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
 
-	fmt.Print("blen : ", string(reqBody[0:4]))
+	fmt.Println("blen : ", string(reqBody[0:4]))
 	if blen := string(reqBody[:4]); strings.Compare(blen, "blen") != 0 {
 		log.Fatal("func : ReceiveTaskResource\n", "This is not a task resource request.")
 	}
 	buffer := bytes.NewBuffer(reqBody[4:8])
 	fileSize, err := binary.ReadVarint(buffer)
-	fmt.Print("size : ", fileSize)
+	fmt.Println("size : ", fileSize)
 	if err != nil {
 		log.Fatal("func : ReceiveTaskResource\n", "This is not a number.")
 	}
@@ -42,7 +42,7 @@ func (h *Host) ReceiveTaskResource(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal("func : ReceiveTaskResource\n", "File Writing Error.")
 	}
-	fmt.Print("dir:", dir)
+	fmt.Println("dir:", dir)
 	h.filePath <- dir
 }
 
