@@ -8,7 +8,8 @@ const Events = {
     windowNetworkStatus : "window.network.status",
     windowTaskProgress  : "window.task.progress",
     windowSendToken     : "window.send.token",
-    windowBlenderPath   : "window.blender.Path"
+    windowBlenderPath   : "window.blender.Path",
+    windowSendConfig    : "window.send.config"
 };
 
 let websocket = undefined;
