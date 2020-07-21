@@ -7,11 +7,12 @@ import (
 	"fmt"
 	"github.com/Equanox/gotron"
 	"io"
-	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 )
 
@@ -42,16 +43,17 @@ func newWorker(w *gotron.BrowserWindow) *Worker {
 }
 
 func (w *Worker) run() {
-	w.init()
+	listener := w.init()
 	w.gotronMessageHandler()
-	w.sendWorkerStatus()
-	go w.httpMessageHandler()
+	go w.sendWorkerStatus()
+	go w.httpMessageHandler(listener)
 	go w.renderTileWithBlender()
 }
 
-func (w *Worker) init() {
+func (w *Worker) init() (listener net.Listener) {
 	w.Name, _ = os.Hostname()
-	w.Address, _ = newAddress() // initialize worker's address.
+	w.Address, listener = newAddress() // initialize worker's address.
+	return
 }
 
 func (w *Worker) gotronMessageHandler() {
@@ -59,10 +61,10 @@ func (w *Worker) gotronMessageHandler() {
 	w.window.On(&gotron.Event{Event: "window.blender.path"}, w.receiveBlenderPath) // blender.exe path
 }
 
-func (w *Worker) httpMessageHandler() {
+func (w *Worker) httpMessageHandler(listener net.Listener) {
 	http.HandleFunc("/render/resource", w.receiveRenderResource)
 
-	http.ListenAndServe(":" + w.Address.Port, nil)
+	http.Serve(listener, nil)
 }
 
 func (w *Worker) sendConnectionRequest(bin []byte) {
@@ -125,8 +127,6 @@ func (w *Worker) sendWorkerStatus() {
 			log.Fatal("func : sendWorkerStatus\n", err)
 		}
 
-		respBytes, _ := ioutil.ReadAll(resp.Body) // read response from host.
-		fmt.Println(string(respBytes)) // printing for validation.
 		resp.Body.Close() // close response body.
 	}
 }
@@ -155,8 +155,6 @@ func (w *Worker) receiveRenderResource(rw http.ResponseWriter, r *http.Request) 
 		Frame: r.Header.Get("fram"),
 	}
 
-	w.T <- t
-
 	file, header, err := r.FormFile("blend-file")
 	if err != nil {
 		log.Fatal("func : receiveRenderResource\n", err)
@@ -164,7 +162,7 @@ func (w *Worker) receiveRenderResource(rw http.ResponseWriter, r *http.Request) 
 
 	defer file.Close()
 
-	path := os.TempDir() + "/" + header.Filename
+	path := filepath.Join(os.TempDir(), header.Filename)
 	out, err := os.Create(path)
 	if err != nil {
 		log.Fatal(rw, "Unable to create the file for writing.")
@@ -179,24 +177,22 @@ func (w *Worker) receiveRenderResource(rw http.ResponseWriter, r *http.Request) 
 	}
 
 	w.FilePath <- path
+	w.T <- t
 }
 
 func (w *Worker) renderTileWithBlender() {
-	var blendFile string
-	var tile Tile
-
 	for {
-		blendFile = <- w.FilePath // *.blend file path
-		tile = <- w.T
+		blendFile := <- w.FilePath // *.blend file path
+		tile := <- w.T
 
-		cmd := exec.Command(w.BlenderPath,
+		cmd := exec.Command("/Applications/Blender.app/Contents/MacOS/Blender",
 			"-b", blendFile,
 			"-F", "EXR",
 			"-Y",
 			"-noaudio",
 			"-E", "CYCLES",
 			"-P", "worker.py",
-			"--", tile.Xmin, tile.Ymin, tile.Xmax, tile.Ymax, tile.Frame)
+			"--", tile.Index, tile.Xmin, tile.Ymin, tile.Xmax, tile.Ymax, tile.Frame)
 
 		stdout, err := cmd.StdoutPipe()
 		stderr, err := cmd.StderrPipe()
