@@ -45,9 +45,8 @@ func newWorker(w *gotron.BrowserWindow) *Worker {
 func (w *Worker) run() {
 	w.init()
 	w.gotronMessageHandler()
-	w.sendWorkerStatus()
-	w.sendBlenderPath()
-	w.sendHostIp()
+	w.sendConfig()
+	go w.sendWorkerStatus()
 	go w.httpMessageHandler()
 	go w.renderTileWithBlender()
 }
@@ -138,46 +137,33 @@ func (w *Worker) sendWorkerStatus() {
 	}
 }
 
-func (w *Worker) sendBlenderPath() {
+func (w *Worker) sendConfig() {
 	message := GotronMessage{
-		Event: &gotron.Event{Event: "window.blender.path"},
-	}
-	message.Body = struct { // temporary struct for sending token message.
-		BlenderPath string `json:"blenderPath"`
-	}{
-		BlenderPath: w.Config.BlenderPath, // initialize value.
-	}
-
-	checkJSON(message) // Printing Message for validation.
-	w.window.Send(message)
-}
-
-func (w *Worker) sendHostIp() {
-	message := GotronMessage{
-		Event: &gotron.Event{Event: "window.send.hostIp"},
+		Event: &gotron.Event{Event: "window.send.config"},
 	}
 	message.Body = struct { // temporary struct for sending token message.
 		HostIp string `json:"hostIp"`
+		BlenderPath string `json:"blenderPath"`
 	}{
-		HostIp: w.Config.HostIp, // initialize value.
+		HostIp: w.Config.HostIp,
+		BlenderPath: w.Config.BlenderPath, // initialize value.
 	}
 
-	checkJSON(message) // Printing Message for validation.
+	//checkJSON(message) // Printing Message for validation.
 	w.window.Send(message)
 }
 
 func (w *Worker) receiveBlenderPath(bin []byte) {
 	var message GotronMessage
 	body := struct {
-		blenderPath string `json:"blenderPath"`
+		BlenderPath string `json:blenderPath`
 	}{}
 	message.Body = &body
 
 	if err := json.Unmarshal(bin, &message); err != nil {
 		log.Fatal("func : receiveBlenderPath\n", err)
 	}
-
-	w.Config.BlenderPath = body.blenderPath
+	w.Config.BlenderPath = body.BlenderPath
 	w.Config.SaveConfig()
 }
 
