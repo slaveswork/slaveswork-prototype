@@ -13,7 +13,7 @@ type Config struct {
 
 func UnmarshalConfig() Config {
 	config := Config{}
-	yamlFile, err := ioutil.ReadFile("conf.yaml")
+	yamlFile, err := ioutil.ReadFile("config.yaml")
 	if err != nil {
 		log.Fatal("[ERROR] Failed to open config file\n")
 	}
