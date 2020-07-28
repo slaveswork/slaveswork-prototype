@@ -26,12 +26,16 @@ func (t *Tile) prettyPrint() {
 	fmt.Printf("Tile: { \"index\" : %s, \"xmin\" : %s, \"ymin\" : %s, \"xmax\" : %s, \"ymax\" : %s, \"frame\" : %s}\n", t.Index, t.Xmin, t.Ymin, t.Xmax, t.Ymax, t.Frame)
 }
 
-func (t *Tile) Dispatch(h *Host, path string) {
+func (t *Tile) Dispatch(h *Host, path string) bool {
+	log.Println("Dispatch Tile -> index :", t.Index)
+
+	var result bool
+
 	var worker *Worker
 
 	for key := range h.workers {
 		worker = h.workers[key]
-		if worker.Status == "" {
+		if worker.Status == "WAITING" {
 			r, w := io.Pipe()
 			m := multipart.NewWriter(w)
 
@@ -78,8 +82,12 @@ func (t *Tile) Dispatch(h *Host, path string) {
 			fmt.Println("worker ", worker.Id, " dispatch Status : ",resp.Status)
 
 			resp.Body.Close()
-			worker.Status = "running"
+			worker.Status = "RUNNING"
+			result = true
+
 			break
 		}
 	}
+
+	return result
 }

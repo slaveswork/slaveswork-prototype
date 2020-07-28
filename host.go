@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Equanox/gotron"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -27,6 +29,7 @@ type Host struct {
 
 	filePath   chan string
 	tiles      []Tile
+	freeWorker chan bool
 }
 
 func newHost(w *gotron.BrowserWindow) *Host {
@@ -35,9 +38,11 @@ func newHost(w *gotron.BrowserWindow) *Host {
 
 		workers:    make(map[int]*Worker),
 		index:      make(chan int),
-		filePath:   make(chan string),
 		register:   make(chan *Worker),
 		unregister: make(chan int),
+
+		filePath:   make(chan string),
+		freeWorker: make(chan bool, 1),
 	}
 }
 
@@ -85,6 +90,7 @@ func (h *Host) httpMessageHandler(listener net.Listener) {
 	http.HandleFunc("/"+h.token, h.receiveConnectionRequest)
 	http.HandleFunc("/status", h.receiveWorkerStatus)
 	http.HandleFunc("/task/tiles", h.receiveTilesInfo)
+	http.HandleFunc("/task/result", h.receiveTaskResult)
 
 	// handlers for blender
 	http.HandleFunc("/running/check", h.receiveRunningCheck)
@@ -108,6 +114,7 @@ func (h *Host) receiveConnectionRequest(w http.ResponseWriter, r *http.Request) 
 	}
 
 	(&worker).Id = respId.Id
+	(&worker).Status = "WAITING"
 	// Add worker status at host's window. ( Method : "Add" )
 	h.send("window.device.status", &worker)
 
@@ -128,7 +135,7 @@ func (h *Host) receiveWorkerStatus(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("func : receiveWorkerStatus\n", err)
 	}
 
-	h.workers[worker.Id] = &worker // TODO need to create a function for update worker.
+	//h.workers[worker.Id] = &worker // TODO need to create a function for update worker.
 
 	// Update worker status at host's window. ( Method : "Update" )
 	h.send("window.device.status", &worker)
@@ -164,13 +171,13 @@ func (h *Host) ReceiveTaskResource(w http.ResponseWriter, r *http.Request) {
 
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody))
 
-	fmt.Print("blen : ", string(reqBody[0:4]))
+	fmt.Println("blen : ", string(reqBody[0:4]))
 	if blen := string(reqBody[:4]); strings.Compare(blen, "blen") != 0 {
 		log.Fatal("func : ReceiveTaskResource\n", "This is not a task resource request.")
 	}
 	buffer := bytes.NewBuffer(reqBody[4:8])
 	fileSize, err := binary.ReadVarint(buffer)
-	fmt.Print("size : ", fileSize)
+	fmt.Println("size : ", fileSize)
 
 	if err != nil {
 		log.Fatal("func : ReceiveTaskResource\n", "This is not a number.")
@@ -185,7 +192,41 @@ func (h *Host) ReceiveTaskResource(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal("func : ReceiveTaskResource\n", "File Writing Error.")
 	}
-	fmt.Print("dir:", dir)
+	fmt.Println("dir:", dir)
 
 	h.filePath <- dir
+}
+
+func (h *Host) receiveTaskResult(w http.ResponseWriter, r *http.Request) {
+	wId, _ := strconv.Atoi(r.Header.Get("Worker"))
+	tIdx := r.Header.Get("Tile")
+
+	file, header, err := r.FormFile("blend-file")
+
+	defer file.Close()
+
+	path := filepath.Join(os.TempDir(), header.Filename)
+	out, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer out.Close()
+
+	_, err = io.Copy(out, file)
+	if err != nil {
+		log.Fatal(w, err)
+	}
+
+	h.workers[wId].Status = "WAITING"
+	for i, _ := range h.tiles {
+		if h.tiles[i].Index == tIdx {
+			h.tiles[i].Success = true
+		}
+	}
+
+	for len(h.freeWorker) > 0 {
+		<- h.freeWorker
+	}
+	h.freeWorker <- true
 }

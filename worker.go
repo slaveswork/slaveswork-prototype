@@ -4,15 +4,17 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/Equanox/gotron"
 	"io"
 	"log"
+	"mime/multipart"
 	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -30,7 +32,7 @@ type Worker struct {
 	Status      string      `json:"-"`
 	T           chan Tile   `json:"-"`
 	FilePath    chan string `json:"-"`
-	Config		Config
+	Config		Config `json:"-"`
 	BlenderPath string `json:"-"`
 }
 
@@ -46,7 +48,7 @@ func newWorker(w *gotron.BrowserWindow) *Worker {
 func (w *Worker) run() {
 	listener := w.init()
 	w.gotronMessageHandler()
-  w.sendConfig()
+    w.sendConfig()
 	go w.sendWorkerStatus()
 	go w.httpMessageHandler(listener)
 	go w.renderTileWithBlender()
@@ -54,10 +56,9 @@ func (w *Worker) run() {
 
 func (w *Worker) init() (listener net.Listener) {
 	w.Name, _ = os.Hostname()
-
 	w.Address, listener = newAddress() // initialize worker's address.
 	w.Config = UnmarshalConfig()
-  return
+	return
 }
 
 func (w *Worker) gotronMessageHandler() {
@@ -204,13 +205,24 @@ func (w *Worker) receiveRenderResource(rw http.ResponseWriter, r *http.Request) 
 }
 
 func (w *Worker) renderTileWithBlender() {
+	var outputFile string
+	var outputPath string
+
+	var result chan string
+	var done string
+
 	for {
+		result = make(chan string)
 		blendFile := <- w.FilePath // *.blend file path
 		tile := <- w.T
+
+		outputFile = "output" + tile.Index + ".exr"
+		outputPath = filepath.Join(os.TempDir(), outputFile)
 
 		cmd := exec.Command(w.Config.BlenderPath,
 			"-b", blendFile,
 			"-F", "EXR",
+			"--render-output", outputPath,
 			"-Y",
 			"-noaudio",
 			"-E", "CYCLES",
@@ -224,15 +236,68 @@ func (w *Worker) renderTileWithBlender() {
 			log.Fatal("func : renderTileWithBlender\n", err)
 		}
 
-		go copyOutput(stdout)
-		go copyOutput(stderr)
+		go w.copyBlenderOutput(stdout, result)
+		go w.copyBlenderOutput(stderr, result)
 		cmd.Wait()
+
+		done = <- result
+
+		req, _ := http.NewRequest("POST", w.hostAddress.generateHostAddress("/task/result"), nil)
+
+		if _, err := os.Stat(outputPath); err == nil {
+			pr, pw := io.Pipe()
+			m := multipart.NewWriter(pw)
+
+			go func() {
+				defer pw.Close()
+				defer m.Close()
+
+				part, err := m.CreateFormFile("blend-file", outputFile)
+				file, err := os.Open(outputPath)
+				if err != nil {
+					log.Fatal("func : renderTileWithBlender\n", err)
+				}
+
+				defer file.Close()
+
+				if _, err := io.Copy(part, file); err != nil {
+					log.Fatal("func : renderTileWithBlender\n", err)
+				}
+			}()
+
+			req.Body = pr
+		}
+
+		req.Header.Add("Worker", strconv.Itoa(w.Id))
+		req.Header.Add("Tile", tile.Index)
+		req.Header.Add("Result", done)
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		resp.Body.Close()
+		close(result)
 	}
 }
 
-func copyOutput(r io.Reader) {
+func (w *Worker) copyBlenderOutput(r io.Reader, ch chan string) {
 	sc := bufio.NewScanner(r)
+
+	var text string
+
 	for sc.Scan() {
-		fmt.Println(sc.Text())
+		text = sc.Text()
+
+		log.Println(text)
+
+		// When 'sc' get the rendering complete text.
+		if strings.Contains(text, "Success.") {
+			ch <- "success"
+		} else if strings.Contains(text, "Error.") {
+			ch <- text // TODO find another way to get error message.
+		}
 	}
 }

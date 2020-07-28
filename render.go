@@ -1,34 +1,39 @@
 package main
 
+import (
+	"log"
+)
+
 func (h *Host) DoRender() {
-	path := <- h.filePath // blend file path
+	path := <-h.filePath // blend file path
 
-	var remaining []Tile
+	var successful int
+	var result bool
+
 	for {
-		// remaining tiles -> should be render.
-		remaining = filter(h.tiles, func(v Tile) bool {
-			return !v.Active
-		})
+		for i, _ := range h.tiles {
+			if !h.tiles[i].Active {
+				h.tiles[i].Active = true
+				result = h.tiles[i].Dispatch(h, path)
 
-		// When there are no tiles left, rendering complete
-		if len(remaining) == 0 {
+				if result == false {
+					log.Println("Dispatch failed Tile index :", h.tiles[i].Index)
+
+					<- h.freeWorker // Wait for free worker channel
+				}
+			}
+		}
+
+		successful = 0
+		for _, tile := range h.tiles {
+			if tile.Success {
+				successful += 1
+			}
+		}
+
+		// end code
+		if (successful / len(h.tiles)) == 1.0 {
 			break
 		}
-
-		// for all remaining tiles
-		for _, tile := range remaining {
-			tile.Active = true
-			tile.Dispatch(h, path)
-		}
 	}
-}
-
-func filter(vs []Tile, f func(Tile) bool) []Tile {
-	vsf := make([]Tile, 0)
-	for _, v := range vs {
-		if f(v) {
-			vsf = append(vsf, v)
-		}
-	}
-	return vsf
 }
