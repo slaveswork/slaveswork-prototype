@@ -32,23 +32,23 @@ type Worker struct {
 	Status      string      `json:"-"`
 	T           chan Tile   `json:"-"`
 	FilePath    chan string `json:"-"`
-	Config		Config `json:"-"`
-	BlenderPath string `json:"-"`
+	Config      Config      `json:"-"`
+	BlenderPath string      `json:"-"`
 }
 
 func newWorker(w *gotron.BrowserWindow) *Worker {
 	return &Worker{
-		window: w, // for worker's window.
-		ci:     make(chan int),
-		T:           make(chan Tile),
-		FilePath:    make(chan string),
+		window:   w, // for worker's window.
+		ci:       make(chan int),
+		T:        make(chan Tile),
+		FilePath: make(chan string),
 	}
 }
 
 func (w *Worker) run() {
 	listener := w.init()
 	w.gotronMessageHandler()
-    w.sendConfig()
+	w.sendConfig()
 	go w.sendWorkerStatus()
 	go w.httpMessageHandler(listener)
 	go w.renderTileWithBlender()
@@ -63,7 +63,7 @@ func (w *Worker) init() (listener net.Listener) {
 
 func (w *Worker) gotronMessageHandler() {
 	w.window.On(&gotron.Event{Event: "app.connect.device"}, w.sendConnectionRequest) // connection between worker and host.
-	w.window.On(&gotron.Event{Event: "app.blender.path"}, w.receiveBlenderPath) // blender.exe path
+	w.window.On(&gotron.Event{Event: "app.blender.path"}, w.receiveBlenderPath)      // blender.exe path
 }
 
 func (w *Worker) httpMessageHandler(listener net.Listener) {
@@ -85,7 +85,7 @@ func (w *Worker) sendConnectionRequest(bin []byte) {
 		log.Fatal("func : sendConnectionRequest\n", err)
 	}
 	w.hostAddress = body.Address // Initialize host address.
-	w.Method = "add" // first send "add" worker to host.
+	w.Method = "add"             // first send "add" worker to host.
 
 	w.Config.HostIp = body.Address.IP
 	w.Config.SaveConfig()
@@ -122,7 +122,7 @@ func (w *Worker) sendWorkerStatus() {
 	close(w.ci) // close channel... we don't need that anymore.
 
 	url := w.hostAddress.generateHostAddress("status") // Host address.
-	w.Method = "update" // from now on, send "update" method to host.
+	w.Method = "update"                                // from now on, send "update" method to host.
 
 	for range time.Tick(time.Second * 5) { // repeat sending this worker's status every 5 seconds.
 		requestBody, err := json.MarshalIndent(w, "", "    ")
@@ -144,10 +144,10 @@ func (w *Worker) sendConfig() {
 		Event: &gotron.Event{Event: "window.send.config"},
 	}
 	message.Body = struct { // temporary struct for sending token message.
-		HostIp string `json:"hostIp"`
+		HostIp      string `json:"hostIp"`
 		BlenderPath string `json:"blenderPath"`
 	}{
-		HostIp: w.Config.HostIp,
+		HostIp:      w.Config.HostIp,
 		BlenderPath: w.Config.BlenderPath, // initialize value.
 	}
 
@@ -170,12 +170,12 @@ func (w *Worker) receiveBlenderPath(bin []byte) {
 }
 
 func (w *Worker) receiveRenderResource(rw http.ResponseWriter, r *http.Request) {
-	t := Tile {
+	t := Tile{
 		Index: r.Header.Get("index"),
-		Xmin: r.Header.Get("xmin"),
-		Ymin: r.Header.Get("ymin"),
-		Xmax: r.Header.Get("xmax"),
-		Ymax: r.Header.Get("ymax"),
+		Xmin:  r.Header.Get("xmin"),
+		Ymin:  r.Header.Get("ymin"),
+		Xmax:  r.Header.Get("xmax"),
+		Ymax:  r.Header.Get("ymax"),
 		Frame: r.Header.Get("fram"),
 	}
 
@@ -213,8 +213,8 @@ func (w *Worker) renderTileWithBlender() {
 
 	for {
 		result = make(chan string)
-		blendFile := <- w.FilePath // *.blend file path
-		tile := <- w.T
+		blendFile := <-w.FilePath // *.blend file path
+		tile := <-w.T
 
 		outputFile = "output" + tile.Index + ".exr"
 		outputPath = filepath.Join(os.TempDir(), outputFile)
@@ -240,7 +240,7 @@ func (w *Worker) renderTileWithBlender() {
 		go w.copyBlenderOutput(stderr, result)
 		cmd.Wait()
 
-		done = <- result
+		done = <-result
 
 		req, _ := http.NewRequest("POST", w.hostAddress.generateHostAddress("/task/result"), nil)
 
