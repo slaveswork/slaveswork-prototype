@@ -27,7 +27,10 @@ func (t *Tile) prettyPrint() {
 }
 
 func (t *Tile) Dispatch(h *Host, path string) {
-	for _, worker := range h.workers {
+	var worker *Worker
+
+	for key := range h.workers {
+		worker = h.workers[key]
 		if worker.Status == "" {
 			r, w := io.Pipe()
 			m := multipart.NewWriter(w)
@@ -37,6 +40,7 @@ func (t *Tile) Dispatch(h *Host, path string) {
 				defer m.Close()
 
 				part, err := m.CreateFormFile("blend-file", "main.blend")
+
 				if err != nil {
 					log.Fatal("func : Dispatch\n", err)
 				}
