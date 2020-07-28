@@ -30,6 +30,7 @@ type Worker struct {
 	Status      string      `json:"-"`
 	T           chan Tile   `json:"-"`
 	FilePath    chan string `json:"-"`
+	Config		Config
 	BlenderPath string `json:"-"`
 }
 
@@ -45,6 +46,7 @@ func newWorker(w *gotron.BrowserWindow) *Worker {
 func (w *Worker) run() {
 	listener := w.init()
 	w.gotronMessageHandler()
+    w.sendConfig()
 	go w.sendWorkerStatus()
 	go w.httpMessageHandler(listener)
 	go w.renderTileWithBlender()
@@ -53,12 +55,13 @@ func (w *Worker) run() {
 func (w *Worker) init() (listener net.Listener) {
 	w.Name, _ = os.Hostname()
 	w.Address, listener = newAddress() // initialize worker's address.
+	w.Config = UnmarshalConfig()
 	return
 }
 
 func (w *Worker) gotronMessageHandler() {
 	w.window.On(&gotron.Event{Event: "app.connect.device"}, w.sendConnectionRequest) // connection between worker and host.
-	w.window.On(&gotron.Event{Event: "window.blender.path"}, w.receiveBlenderPath) // blender.exe path
+	w.window.On(&gotron.Event{Event: "app.blender.path"}, w.receiveBlenderPath) // blender.exe path
 }
 
 func (w *Worker) httpMessageHandler(listener net.Listener) {
@@ -81,6 +84,9 @@ func (w *Worker) sendConnectionRequest(bin []byte) {
 	}
 	w.hostAddress = body.Address // Initialize host address.
 	w.Method = "add" // first send "add" worker to host.
+
+	w.Config.HostIp = body.Address.IP
+	w.Config.SaveConfig()
 
 	// Marshaling body for connection request.
 	requestBody, err := json.MarshalIndent(w, "", "    ")
@@ -131,18 +137,34 @@ func (w *Worker) sendWorkerStatus() {
 	}
 }
 
+func (w *Worker) sendConfig() {
+	message := GotronMessage{
+		Event: &gotron.Event{Event: "window.send.config"},
+	}
+	message.Body = struct { // temporary struct for sending token message.
+		HostIp string `json:"hostIp"`
+		BlenderPath string `json:"blenderPath"`
+	}{
+		HostIp: w.Config.HostIp,
+		BlenderPath: w.Config.BlenderPath, // initialize value.
+	}
+
+	//checkJSON(message) // Printing Message for validation.
+	w.window.Send(message)
+}
+
 func (w *Worker) receiveBlenderPath(bin []byte) {
 	var message GotronMessage
 	body := struct {
-		blenderPath string `json:"blenderPath"`
+		BlenderPath string `json:blenderPath`
 	}{}
 	message.Body = &body
 
 	if err := json.Unmarshal(bin, &message); err != nil {
 		log.Fatal("func : receiveBlenderPath\n", err)
 	}
-
-	w.BlenderPath = body.blenderPath
+	w.Config.BlenderPath = body.BlenderPath
+	w.Config.SaveConfig()
 }
 
 func (w *Worker) receiveRenderResource(rw http.ResponseWriter, r *http.Request) {
@@ -185,7 +207,7 @@ func (w *Worker) renderTileWithBlender() {
 		blendFile := <- w.FilePath // *.blend file path
 		tile := <- w.T
 
-		cmd := exec.Command("/Applications/Blender.app/Contents/MacOS/Blender",
+		cmd := exec.Command(w.Config.BlenderPath,
 			"-b", blendFile,
 			"-F", "EXR",
 			"-Y",
