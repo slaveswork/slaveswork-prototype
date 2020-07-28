@@ -14,33 +14,37 @@ const connectDevice = (ip, port, token, setIp, setToken, setPort) => {
         });
     
         setIp(ip)
-        setToken(toekn)
+        setToken(token)
         setPort(port)
 }
 
-const useInput = (initialValue) => {
+const useInput = (initialValue = '') => {
     const [value, setValue] = useState(initialValue)
-    return {value, setValue}
+    const onChange = (e) => {
+        setValue(e.target.value);
+    }
+    return {value, onChange}
 }
 
 const WorkerHome = ({ ip, port, token, setIp, setPort, setToken }) => {
-    console.log()
+    
     const hostIp = useInput(ip)
     const hostPort = useInput(port)
     const hostToken = useInput(token)
+    console.log(hostIp)
 
     return (
         <div className="tab relative">
             <div id="input_box">
-                <input id="input_ip" type="text" value = {hostIp.value == "127.0.0.1" ? "" : ip} onChange={hostIp.setValue} required ></input>
+                <input id="input_ip" type="text" value = {hostIp.value == "127.0.0.1" ? "" : hostIp.value} onChange={hostIp.onChange} required ></input>
                 <div className="underline" id="ip_underline"></div>
                 <label htmlFor="input_ip">Input Ip</label>
 
-                <input id="input_port" type="text" value={hostPort.value} onChange={hostPort.setValue} required></input>
+                <input id="input_port" type="text" value={hostPort.value} onChange={hostPort.onChange} required></input>
                 <div className="underline" id="port_underline"></div>
                 <label htmlFor="input_port">Input Port</label>
 
-                <input id="input_token" type="text"  value={hostToken.value} onChange={hostToken.setValue} required></input>
+                <input id="input_token" type="text"  value={hostToken.value} onChange={hostToken.onChange} required></input>
                 <div className="underline" id="token_underline"></div>
                 <label htmlFor="input_token">Input Token</label>
             </div>
@@ -52,9 +56,9 @@ const WorkerHome = ({ ip, port, token, setIp, setPort, setToken }) => {
 const getCurrentState = (state, ownProps) => {
     console.log(state)
     return {
-        ip: state.ip,
-        port: state.port,
-        token: state.token,
+        ip: state.info.ip,
+        port: state.info.port,
+        token: state.info.token,
     };
 }
 
