@@ -6,7 +6,7 @@ import Status from '../../componets/tab/Status';
 import { Events, sendMessage, receiveMessage } from '../../service/Message';
 import './Worker.css'
 import { connect } from 'react-redux';
-import { setBlender } from '../../service/store';
+import { setBlender, setIp } from '../../service/store';
 
 const menuArray = [
     {
@@ -23,14 +23,22 @@ const menuArray = [
     }
 ];
 
-const onMessageBlenderPath = (setBlender) => {
-    receiveMessage(Events.windowBlenderPath, (message) => {
-        setBlender(message.blenderPath);
+const onMessageConfig = (setIp, setBlender) => {
+    receiveMessage(Events.windowSendConfig, (message) => {        
+        console.log("worker receive config");
+        console.log(message)
+        if(message.hostIp !== ""){
+            setIp(message.hostIp)
+        }
+        if(message.blenderPath !== ""){
+            setBlender(message.blenderPath)
+        }
     });
 }
 
-const Worker = ({setBlender}) => {
+const Worker = ({setIp, setBlender}) => {
     sendMessage(Events.appWorkerStart);
+    onMessageConfig(setIp, setBlender)
 
     return (
         <div id="wrapper">
@@ -51,6 +59,7 @@ const Worker = ({setBlender}) => {
 
 const mapDispatchToProps = (dispatch, ownProps) => {
     return {
+        setIp : (ip) => dispatch(setIp(ip)),
         setBlender: (blenderPath) => dispatch(setBlender(blenderPath)),
     }
 }

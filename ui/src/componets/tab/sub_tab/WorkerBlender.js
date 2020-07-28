@@ -5,10 +5,12 @@ import { setBlender } from '../../../service/store'
 
 const WorkerBlender = ({ blenderFilePath, setBlender }) => {
     const blender = useRef();
-    console.log(blenderFilePath)
     const regist = () => {
         setBlender(blender.current.files[0].path);
-        sendMessage(Events.appBlenderPath, { "blenderPath": blenderFilePath })
+        sendMessage(Events.appBlenderPath,
+            {
+                blenderPath: blender.current.files[0].path
+            })
     }
 
     const reset = () => {
