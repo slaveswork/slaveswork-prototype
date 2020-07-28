@@ -12,10 +12,10 @@ const connectDevice = (ip, port, token, setIp, setToken, setPort) => {
             port: port.value,
             token: token.value
         });
-    
-        setIp(ip)
-        setToken(token)
-        setPort(port)
+
+    setIp(ip.value)
+    setToken(token.value)
+    setPort(port.value)
 }
 
 const useInput = (initialValue = '') => {
@@ -23,11 +23,11 @@ const useInput = (initialValue = '') => {
     const onChange = (e) => {
         setValue(e.target.value);
     }
-    return {value, onChange}
+    return { value, onChange }
 }
 
 const WorkerHome = ({ ip, port, token, setIp, setPort, setToken }) => {
-    
+
     const hostIp = useInput(ip)
     const hostPort = useInput(port)
     const hostToken = useInput(token)
@@ -36,7 +36,7 @@ const WorkerHome = ({ ip, port, token, setIp, setPort, setToken }) => {
     return (
         <div className="tab relative">
             <div id="input_box">
-                <input id="input_ip" type="text" value = {hostIp.value == "127.0.0.1" ? "" : hostIp.value} onChange={hostIp.onChange} required ></input>
+                <input id="input_ip" type="text" value={hostIp.value == "127.0.0.1" ? "" : hostIp.value} onChange={hostIp.onChange} required ></input>
                 <div className="underline" id="ip_underline"></div>
                 <label htmlFor="input_ip">Input Ip</label>
 
@@ -44,7 +44,7 @@ const WorkerHome = ({ ip, port, token, setIp, setPort, setToken }) => {
                 <div className="underline" id="port_underline"></div>
                 <label htmlFor="input_port">Input Port</label>
 
-                <input id="input_token" type="text"  value={hostToken.value} onChange={hostToken.onChange} required></input>
+                <input id="input_token" type="text" value={hostToken.value} onChange={hostToken.onChange} required></input>
                 <div className="underline" id="token_underline"></div>
                 <label htmlFor="input_token">Input Token</label>
             </div>
