@@ -135,7 +135,8 @@ func (h *Host) receiveWorkerStatus(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("func : receiveWorkerStatus\n", err)
 	}
 
-	//h.workers[worker.Id] = &worker // TODO need to create a function for update worker.
+	h.workers[worker.Id].Cpu = worker.Cpu
+	h.workers[worker.Id].Memory = worker.Memory
 
 	// Update worker status at host's window. ( Method : "Update" )
 	h.send("window.device.status", &worker)
