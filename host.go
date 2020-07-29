@@ -209,7 +209,7 @@ func (h *Host) receiveTaskResult(w http.ResponseWriter, r *http.Request) {
 	path := filepath.Join(os.TempDir(), header.Filename)
 	out, err := os.Create(path)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("func : receiveTaskResult\n", err)
 	}
 
 	defer out.Close()
@@ -224,6 +224,20 @@ func (h *Host) receiveTaskResult(w http.ResponseWriter, r *http.Request) {
 		if h.tiles[i].Index == tIdx {
 			h.tiles[i].Success = true
 		}
+	}
+
+	req, err := http.NewRequest("GET", "http://localhost:8000/", nil)
+	if err != nil {
+		log.Fatal("func : receiveTaskResult\n", err)
+	}
+
+	req.Header.Add("filename", path)
+	req.Header.Add("index", tIdx)
+
+	client := &http.Client{}
+	_, err = client.Do(req)
+	if err != nil {
+		log.Fatal("func : receiveTaskResult\n", err)
 	}
 
 	for len(h.freeWorker) > 0 {
