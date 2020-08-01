@@ -43,6 +43,8 @@ func (h *Host) send(e string, b interface{}) {
 			Id:     b.(*Worker).Id,
 			Name:   b.(*Worker).Name,
 			Method: b.(*Worker).Method,
+			CPU:    b.(*Worker).Cpu,
+			Memory: b.(*Worker).Memory,
 		}
 	}
 

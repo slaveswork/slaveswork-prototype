@@ -17,8 +17,8 @@ func (h *Host) DoRender() {
 				result = h.tiles[i].Dispatch(h, path)
 
 				if result == false {
+					h.tiles[i].Active = false
 					log.Println("Dispatch failed Tile index :", h.tiles[i].Index)
-
 					<- h.freeWorker // Wait for free worker channel
 				}
 			}
