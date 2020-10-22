@@ -30,7 +30,7 @@
     display: inline-block;
 }
 
-.sub_tab{
+.sub_tab_background{
     width: 100%;
     height: calc(100% - 60px);
     background-color: #fff;

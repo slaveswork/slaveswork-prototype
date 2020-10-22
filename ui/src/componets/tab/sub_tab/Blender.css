@@ -1,0 +1,20 @@
+.sub_tab{
+    font-family: "noto sans";
+}
+
+.sub_tab .sub_tab_title{
+    font-size: 36px;
+    padding: 20px;
+    font-family: 'quicksand';
+    font-weight: 200;
+}
+
+
+.sub_tab ol{
+    padding: 0px 60px;
+}
+
+.sub_tab ol li {
+    list-style: decimal;
+    padding-bottom: 10px;
+}
