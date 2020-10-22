@@ -3,10 +3,10 @@ import React from 'react';
 const Blender = () => {
     return (
         <div className="sub_tab">
-            <h5>For example</h5>
+            <h5>Blender</h5>
             <ul>
                 <li>- Start Blender</li>
-                <li>- Select the "File->User Preferences" menu item</li>
+                <li>- Select the "File -> User Preferences" menu item</li>
                 <li>- Switch to tab "Add-ons"</li>
                 <li>- Press the "Install from file..." button in the bottom of the preferences dialog</li>
                 <li>- Select the .zip file and double-click on it</li>
