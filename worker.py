@@ -18,9 +18,9 @@ frame = int(argv[5])
 scn.frame_set(frame)
 
 # set a unique output path
-scn.render.filepath = "//render/" + str(index)
-for i in range(0, 4):
-    scn.render.filepath += "_" + argv[i]
+# scn.render.filepath = "//render/" + str(index)
+# for i in range(0, 4):
+#     scn.render.filepath += "_" + argv[i]
 
 scn.render.image_settings.file_format = 'OPEN_EXR'
 scn.render.image_settings.color_mode = 'RGBA'

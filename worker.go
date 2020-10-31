@@ -5,8 +5,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/Equanox/gotron"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/mem"
 	"io"
 	"log"
+	"math"
 	"mime/multipart"
 	"net"
 	"net/http"
@@ -27,6 +30,8 @@ type Worker struct {
 	Name    string  `json:"name"`
 	Method  string  `json:"method"`
 	Address Address `json:"address"`
+	Cpu     float64 `json:"cpu"`
+	Memory  float64 `json:"memory"`
 
 	// Worker status -> ignore
 	Status      string      `json:"-"`
@@ -125,6 +130,12 @@ func (w *Worker) sendWorkerStatus() {
 	w.Method = "update"                                // from now on, send "update" method to host.
 
 	for range time.Tick(time.Second * 5) { // repeat sending this worker's status every 5 seconds.
+		cpuStat, _ := cpu.Percent(time.Second,true)
+		memStat, _ := mem.VirtualMemory()
+
+		w.Cpu = math.Round(cpuStat[cpu.CPUser] * 100) / 100
+		w.Memory = math.Round(memStat.UsedPercent * 100) / 100
+
 		requestBody, err := json.MarshalIndent(w, "", "    ")
 		if err != nil {
 			log.Fatal("func : sendWorkerStatus\n", err)
@@ -217,12 +228,12 @@ func (w *Worker) renderTileWithBlender() {
 		tile := <-w.T
 
 		outputFile = "output" + tile.Index + ".exr"
-		outputPath = filepath.Join(os.TempDir(), outputFile)
+		outputPath = filepath.Join(os.TempDir(), "render", outputFile)
 
 		cmd := exec.Command(w.Config.BlenderPath,
 			"-b", blendFile,
 			"-F", "EXR",
-			"--render-output", outputPath,
+			"-o", outputPath,
 			"-Y",
 			"-noaudio",
 			"-E", "CYCLES",
@@ -266,6 +277,7 @@ func (w *Worker) renderTileWithBlender() {
 			}()
 
 			req.Body = pr
+			req.Header.Add("Content-Type", m.FormDataContentType())
 		}
 
 		req.Header.Add("Worker", strconv.Itoa(w.Id))
