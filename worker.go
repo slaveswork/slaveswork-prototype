@@ -9,6 +9,7 @@ import (
 	"github.com/shirou/gopsutil/mem"
 	"io"
 	"log"
+	"math"
 	"mime/multipart"
 	"net"
 	"net/http"
@@ -132,8 +133,8 @@ func (w *Worker) sendWorkerStatus() {
 		cpuStat, _ := cpu.Percent(time.Second,true)
 		memStat, _ := mem.VirtualMemory()
 
-		w.Cpu = cpuStat[cpu.CPUser]
-		w.Memory = memStat.UsedPercent
+		w.Cpu = math.Round(cpuStat[cpu.CPUser] * 100) / 100
+		w.Memory = math.Round(memStat.UsedPercent * 100) / 100
 
 		requestBody, err := json.MarshalIndent(w, "", "    ")
 		if err != nil {

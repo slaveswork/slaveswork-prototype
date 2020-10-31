@@ -50,6 +50,21 @@ func (h *Host) run() {
 	listener := h.init()
 	h.gotronMessageHandler()
 	go h.httpMessageHandler(listener)
+
+	worker := newWorker(h.window)
+	worker.run()
+
+	var message GotronMessage
+	body := struct {
+		Address
+		Token string `json:token`
+	}{
+		Address{h.address.IP, h.address.Port},
+		h.token,
+	}
+	message.Body = &body
+	request, _ := json.Marshal(message)
+	worker.sendConnectionRequest(request)
 }
 
 func (h *Host) init() (listener net.Listener) {
