@@ -7,8 +7,7 @@ import './Blender.css';
 const WorkerBlender = ({ blenderFilePath, setBlender }) => {
     const blender = useRef();
     const regist = () => {
-        if (blender.current.files[0] !== undefined 
-            && blender.current.files[0].name === "blender.exe") {
+        if (blender.current.files[0] !== undefined) {
             setBlender(blender.current.files[0].path);
             sendMessage(Events.appBlenderPath,
                 {
