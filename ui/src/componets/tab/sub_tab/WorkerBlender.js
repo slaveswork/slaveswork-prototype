@@ -2,15 +2,21 @@ import React, { useRef } from 'react';
 import { Events, sendMessage } from '../../../service/Message';
 import { connect } from 'react-redux';
 import { setBlender } from '../../../service/store'
+import './Blender.css';
 
 const WorkerBlender = ({ blenderFilePath, setBlender }) => {
     const blender = useRef();
     const regist = () => {
-        setBlender(blender.current.files[0].path);
-        sendMessage(Events.appBlenderPath,
-            {
-                blenderPath: blender.current.files[0].path
-            })
+        if (blender.current.files[0] !== undefined 
+            && blender.current.files[0].name === "blender.exe") {
+            setBlender(blender.current.files[0].path);
+            sendMessage(Events.appBlenderPath,
+                {
+                    blenderPath: blender.current.files[0].path
+                })
+        } else {
+            alert("set blender.exe file");
+        }
     }
 
     const reset = () => {
@@ -18,19 +24,24 @@ const WorkerBlender = ({ blenderFilePath, setBlender }) => {
     }
 
     return (
-        <div className="sub_tab">
-            <h2>1. blender 설치</h2>
-            <p>해당 사이트에 들어가서 blender를 설치해주세요.</p>
-            <h2>2. SlavesWork add-On 추가</h2>
-            <p>SlavesWork add-On 추가해주세요.</p>
-            <h2>3. blender 실행파일 등록</h2>
-            <p>blender.exe 을 등록해주세요. blender version은 3.8이상이여야 합니다.</p>
-            {blenderFilePath === "" ?
-                (<input type="file" id="blender-input" ref={blender} accept=".exe" />) :
-                (<p>Blender File Path : {blenderFilePath}</p>)}
-            {blenderFilePath === "" ?
-                (<button onClick={regist}>등록</button>) :
-                (<button onClick={reset}>초기화</button>)}
+        <div className="sub_tab_background">
+            <div className="sub_tab">
+                <h5 className="sub_tab_title">Blender</h5>
+                <ol>
+                    <li>blender 설치</li>
+                    <li>해당 사이트에 들어가서 blender를 설치해주세요.</li>
+                    <li>SlavesWork add-On 추가</li>
+                    <li>SlavesWork add-On 추가해주세요.</li>
+                    <li>blender 실행파일 등록</li>
+                    <li>blender.exe 을 등록해주세요. blender version은 3.8이상이여야 합니다.</li>
+                    {blenderFilePath === "" ?
+                        (<input type="file" id="blender-input" ref={blender} accept=".exe" />) :
+                        (<p>Blender File Path : {blenderFilePath}</p>)}
+                    {blenderFilePath === "" ?
+                        (<button onClick={regist}>등록</button>) :
+                        (<button onClick={reset}>초기화</button>)}
+                </ol>
+            </div>
         </div>
     );
 }
