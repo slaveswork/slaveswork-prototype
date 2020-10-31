@@ -1,14 +1,16 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { addDevice } from '../../service/store'
 
 import './Device.css';
 
-const Device = ({ devices }) => {
+const Device = ({ devices, addDevice }) => {
 
     return (
         <div className="tab">
             <div className="tab_title_wrapper">
                 <h4 id="tab_device_title">Connected Device</h4>
+                <button id="device_gen_btn" onClick={() => genDevice(addDevice)}>Generate</button>
                 <button id="device_delete_btn">Delete</button>
             </div>
             <div id="tab_device_list">
@@ -49,6 +51,10 @@ const Device = ({ devices }) => {
     );
 }
 
+const genDevice = (addDevice) => {
+    addDevice({ device: {id : 1, name : "test", cpu : "0.0" , memory :"00,00"}})
+}
+
 const getCurrentState = (state, ownProps) => {
     console.log("host devices state :")
     console.log(state);
@@ -57,4 +63,10 @@ const getCurrentState = (state, ownProps) => {
     };
 }
 
-export default connect(getCurrentState)(Device);
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+    return {
+        addDevice: (device) => dispatch(addDevice(device)),
+    }
+}
+export default connect(getCurrentState, mapDispatchToProps)(Device);
