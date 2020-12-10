@@ -27,12 +27,9 @@ const WorkerBlender = ({ blenderFilePath, setBlender }) => {
             <div className="sub_tab">
                 <h5 className="sub_tab_title">Blender</h5>
                 <ol>
-                    <li>blender 설치</li>
-                    <li>해당 사이트에 들어가서 blender를 설치해주세요.</li>
-                    <li>SlavesWork add-On 추가</li>
-                    <li>SlavesWork add-On 추가해주세요.</li>
-                    <li>blender 실행파일 등록</li>
-                    <li>blender.exe 을 등록해주세요. blender version은 3.8이상이여야 합니다.</li>
+                    <li>Install blender</li>
+                    <li>Select the "blender.exe" file</li>
+                    <li>(NOTE : Blender version must be at least 3.8.)</li>
                     {blenderFilePath === "" ?
                         (<input type="file" id="blender-input" ref={blender} accept=".exe" />) :
                         (<p>Blender File Path : {blenderFilePath}</p>)}

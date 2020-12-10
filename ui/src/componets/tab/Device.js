@@ -10,7 +10,6 @@ const Device = ({ devices, addDevice }) => {
         <div className="tab">
             <div className="tab_title_wrapper">
                 <h4 id="tab_device_title">Connected Device</h4>
-                <button id="device_gen_btn" onClick={() => genDevice(addDevice)}>Generate</button>
                 <button id="device_delete_btn">Delete</button>
             </div>
             <div id="tab_device_list">
